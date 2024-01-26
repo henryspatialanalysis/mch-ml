@@ -1,3 +1,6 @@
+# Ignore top-level credentials file
+.creds
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
