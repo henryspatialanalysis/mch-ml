@@ -29,6 +29,9 @@ download_dhs_microdata <- function(survey_id){
 
   # Download and prepare all datasets
   all_datasets <- rdhs::get_datasets(dataset_filenames = select_datasets$FileName)
+  # Read list of RDS files
+  dataset_list <- lapply(all_datasets, readRDS) |> lapply(data.table::as.data.table)
+  names(dataset_list) <- select_datasets$FileType |> tolower() |> make.names()
 
-  return(all_datasets)
+  return(dataset_list)
 }
