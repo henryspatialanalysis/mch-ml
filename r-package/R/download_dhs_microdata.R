@@ -21,10 +21,13 @@ download_dhs_microdata <- function(survey_id){
     suppressMessages()
 
   # Keep selected dataset types and file formats
+  # Geospatial data is in GPS format, all others can be read in DTA (Stata) format
   select_datasets <- all_datasets[
-    (DatasetType %in% c('Survey Datasets', 'GPS Datasets')) & 
-    (FileFormat == 'Flat ASCII data (.dat)') &
-    !(FileType %in% c('Fieldworker Questionnaire', 'Couples\' Recode')),
+    ((DatasetType == 'GPS Datasets') & grepl('dat', FileFormat)) | 
+    (
+      (DatasetType == 'Survey Datasets') & grepl('dta', FileFormat) & 
+      !grepl('Couple|Fieldworker|Men', FileType)
+    ),
   ]
 
   # Download and prepare all datasets
