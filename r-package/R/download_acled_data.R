@@ -58,14 +58,18 @@ download_acled_data <- function(
     )
     # Try to parse results as a data.table
     if(!httr::http_error(acled_api_response)){
-      acled_results_table <- httr::content(acled_api_response, as = 'text') |>
-        data.table::fread()
-      if(all(content_rows %in% colnames(acled_results_table))){
-        results_list[[results_page]] <- acled_results_table
-      }
-      if(nrow(acled_results_table) == page_max_rows){
-        results_page <- results_page + 1
-        query_next_page <- TRUE
+      acled_results_content <- httr::content(acled_api_response, as = 'text')
+      if(startsWith(acled_results_content, "No data has been found")){
+        warning(paste("No results found for country", country_name))
+      } else {
+        acled_results_table <- data.table::fread(acled_results_content)
+        if(all(content_rows %in% colnames(acled_results_table))){
+          results_list[[results_page]] <- acled_results_table
+        }
+        if(nrow(acled_results_table) == page_max_rows){
+          results_page <- results_page + 1
+          query_next_page <- TRUE
+        }
       }
     }
   }
