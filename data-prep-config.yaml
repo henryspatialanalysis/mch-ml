@@ -1,6 +1,5 @@
-countries: [
-  "Cote D'Ivoire", "Ghana", "Indonesia", "Kenya", "Senegal", "Nigeria", "Philippines"
-]
+countries: ["Cote D'Ivoire", "Ghana", "Kenya", "Senegal", "Nigeria", "Philippines"]
+survey_ids: ["CI2021DHS", "GH2022DHS", "KE2022DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
 versions:
   prepared_data: '20240201'
 directories:
@@ -15,3 +14,10 @@ directories:
   prepared_data:
     versioned: TRUE
     path: '~/temp_data/usaid-mch-ml/prepared_data'
+  shps:
+    versioned: FALSE
+    path: '/mnt/c/Users/Lenovo/OneDrive - Henry Spatial Analysis LLC/Henry Spatial Analysis/DHS/Sharing/Updated GAUL shapefile/updated_gaul_v2'
+    files:
+      adm0: 'g2015_2014_0.shp'
+      adm1: 'g2015_2014_1.shp'
+      adm2: 'g2015_2014_2.shp'
