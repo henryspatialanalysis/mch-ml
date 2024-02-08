@@ -1,0 +1,13 @@
+countries: [
+  "Cote D'Ivoire", "Ghana", "Indonesia", "Kenya", "Senegal", "Nigeria", "Philippines"
+]
+versions:
+directories:
+  r_package:
+    versioned: FALSE
+    path: '~/repos/usaid-mch-ml/r-package'
+  metadata:
+    versioned: FALSE
+    path: '~/temp_data/usaid-mch-ml/metadata'
+    files:
+      codebook: 'codebook_20240201.csv'
