@@ -105,8 +105,8 @@ clean_microdata_using_codebook <- function(microdata, codebook){
     m_clean[(c_alive == 1L) & (c_age_months <= 59), c_died_pnn := NA_integer_ ]
     # Exclude neonatal deaths
     m_clean[(c_alive == 0L) & (c_died_age_months < 1), c_died_pnn := NA_integer_ ]
-    # Exclude any NAs in child_age_months or child_alive
-    m_clean[ is.na(c_age_months) | is.na(c_alive), c_died_pnn := NA_integer_ ]
+    # Exclude any NAs in child_alive or (for living children) child_age_months
+    m_clean[ is.na(c_alive) | ((c_alive == 1L) & is.na(c_age_months)), c_died_pnn := NA_integer_ ]
   } else {
     warning("Could not prepare c_died_pnn indicator due to missing columns")
   }
