@@ -128,10 +128,8 @@ clean_microdata_using_codebook <- function(microdata, codebook){
   }
 
   # Recode: water on premises => 0 travel time
-  if(all(c('water_on_premises', 'water_time') %in% prepared_cols)){
-    m_clean[water_on_premises == 1L, water_time := 0L ]
-    # Drop original column
-    m_clean[, water_on_premises := NULL ]
+  if('water_time' %in% prepared_cols){
+    m_clean[water_time == 996L, water_time := 0L ]
   }
 
   # Construct skilled ANC and skilled birth attendance indicators
