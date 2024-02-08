@@ -6,6 +6,11 @@ Authors@R:
            comment = c(ORCID = "0000-0001-8150-4988"))
 Description: Replication package for the USAID-ICF joint project to understand mortality
   predictors among children aged 1-59 months.
+Imports:
+  data.table,
+  glue,
+  httr,
+  rdhs
 License: Internal only, TBD
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

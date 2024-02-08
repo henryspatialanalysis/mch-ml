@@ -33,5 +33,5 @@ Download geopositioned conflict data from ACLED using an API query
 \details{
 The api_key and api_email parameters can be set as environment variables, and
 are called from environment variables by default. For more information, see
-\link[=https://developer.acleddata.com/]{the ACLED developer dashboard}.
+\href{https://developer.acleddata.com/}{the ACLED developer dashboard}.
 }
