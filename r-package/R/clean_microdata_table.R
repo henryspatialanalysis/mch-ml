@@ -114,6 +114,12 @@ clean_microdata_using_codebook <- function(microdata, codebook){
   # Mother's age at birth
   if(all(c('c_birth_cmc', 'w_born_cmc') %in% prepared_cols)){
     m_clean[, c_maternal_age := floor((c_birth_cmc - w_born_cmc) / 12)]
+    m_clean[, c_birth_year := 1900L + floor(c_birth_cmc / 12)]
+  }
+
+  # Subset only to births in the 10 years prior to the interview
+  if(all(c('c_birth_cmc', 'int_month_cmc') %in% prepared_cols)){
+    m_clean <- m_clean[((int_month_cmc - c_birth_cmc) <= 120), ]
   }
 
   # Create binary indicator for low birth weight, if available
