@@ -84,6 +84,15 @@ for(prepare_country in prepare_countries){
   )
   tictoc::toc() # End merging sibling characteristics
 
+  # Merge on cluster metadata
+  cluster_metadata <- as.data.table(microdata_list$geographic.data)[, .(
+    cluster = DHSCLUST, latitude = LATNUM, longitude = LONGNUM, admin1_code = ADM1DHS,
+    admin1_name = ADM1NAME
+  )]
+  analysis_table <- merge(
+    x = analysis_table, y = cluster_metadata, by = 'cluster', all.x = TRUE
+  )
+
   # Load country conflict data
   tictoc::tic("  -> Preparing buffered conflict data")
   birth_years <- sort(unique(analysis_table$c_birth_year))
