@@ -2,6 +2,7 @@ countries: [
   "Cote D'Ivoire", "Ghana", "Indonesia", "Kenya", "Senegal", "Nigeria", "Philippines"
 ]
 versions:
+  prepared_data: '20240201'
 directories:
   r_package:
     versioned: FALSE
@@ -11,3 +12,6 @@ directories:
     path: '~/temp_data/usaid-mch-ml/metadata'
     files:
       codebook: 'codebook_20240201.csv'
+  prepared_data:
+    versioned: TRUE
+    path: '~/temp_data/usaid-mch-ml/prepared_data'
