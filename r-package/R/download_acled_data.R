@@ -5,7 +5,7 @@
 #' 
 #' @details The api_key and api_email parameters can be set as environment variables, and
 #'   are called from environment variables by default. For more information, see
-#'   [the ACLED developer dashboard][https://developer.acleddata.com/].
+#'   \href{https://developer.acleddata.com/}{the ACLED developer dashboard}.
 #' 
 #' @param country_name (`character(1)`) Standardized name of the country where ACLED data
 #'   will be downloaded
