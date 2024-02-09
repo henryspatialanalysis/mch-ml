@@ -11,7 +11,7 @@
 ## SETTINGS
 
 # All other settings set through the config file
-CONFIG_PATH <- '~/repos/usaid-mch-ml/data-prep-config.yaml'
+CONFIG_PATH <- '~/repos/usaid-mch-ml/config.yaml'
 
 
 ## SETUP -------------------------------------------------------------------------------->

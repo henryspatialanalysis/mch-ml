@@ -5,7 +5,7 @@
 ## #######################################################################################
 
 ## Setup
-CONFIG_PATH <- '~/repos/usaid-mch-ml/data-prep-config.yaml'
+CONFIG_PATH <- '~/repos/usaid-mch-ml/config.yaml'
 load_packages <- c('devtools', 'versioning', 'tictoc', 'ggplot2', 'data.table', 'RColorBrewer', 'sf')
 lapply(load_packages, library, character.only = T) |> invisible()
 
