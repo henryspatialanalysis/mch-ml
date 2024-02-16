@@ -19,6 +19,7 @@ get_rdhs_cache_directory <- function(){
 }
 
 #' Get DHS survey metadata
+#' Get DHS survey metadata
 #' 
 #' @description Pull DHS internal survey metadata based on country, year, and survey type
 #' 
@@ -35,6 +36,7 @@ get_rdhs_cache_directory <- function(){
 #' 
 #' @import data.table
 #' @importFrom rdhs dhs_surveys
+#' @importFrom utils unzip
 #' @export
 pull_dhs_survey_metadata <- function(country, years = 'most_recent', survey_types = 'all'){
   # Some dummy variables to avoid R CMD CHECK warnings
@@ -92,7 +94,9 @@ pull_dhs_survey_metadata <- function(country, years = 'most_recent', survey_type
 #' @export
 download_dhs_microdata <- function(survey_id, topics_regex = character(0)){
   # Some dummy variables to avoid R CMD CHECK warnings
-  DatasetType <- FileFormat <- FileType <- NULL
+  (DatasetType <- FileFormat <- FileType <- test_zip <- FileName <- test_rds <- 
+    cleaned_title <- NULL
+  )
 
   # Check that the RDHS cache has been set up
   rdhs_cache_directory <- get_rdhs_cache_directory()
