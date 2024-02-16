@@ -17,6 +17,9 @@ reshape_dhs_covariates <- function(
   id_col = 'DHSCLUST',
   drop_cols = c('DHSID','GPS_Dataset','DHSCC','DHSYEAR','SurveyID')
 ){
+  # Set some empty variables to pass R checks
+  variable <- id <- value <- i.value <- val_p <- val_n <- runlength <- missings <- NULL
+
   # Drop unnecessary columns, then melt
   covs_table <- covs_table[, setdiff(colnames(covs_table), drop_cols), with = F]
   covs_long <- melt(covs_table, id.vars = id_col, variable.factor = F) |> suppressWarnings()
