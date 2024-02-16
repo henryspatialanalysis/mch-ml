@@ -8,21 +8,29 @@
 #' @param outcome (`character(1)`) Character naming the field of the outcome to be
 #'   predicted
 #' @param predictors (`character(N)`) A vector of all candidate models to consider
+#' @param model_type (`character(1)`) Machine learning method to use, passed to caret.
 #' @param loss_function A function that generates average model error given two vectors,
 #'   the two observations and the predicted risks.
+#' @param model_options (`list(N)`, defaults to an empty list) Named list containing the
+#'   names of tuning parameters to be passed to caret. If arguments are not passed, the
+#'   caret defaults will be used.
 #' 
 #' @return A named list, with names formatted as "cov_a+cov_b+cov_c+..." giving the model
 #'   total error for each set of covariates referred to in the name
 #' 
-#' @seealso [loss_functions] For defining the loss function, [vec_to_name] for converting
-#'   a vector of covariates to a character string
+#' @seealso [get_loss_function] For defining the loss function, [vector_to_names] for
+#'   converting a vector of covariates to a character string
 #' 
 #' @importFrom caret trainControl train
 #' @importFrom glue glue
+#' @importFrom stats as.formula predict
 #' @export
 run_all_covariate_combinations <- function(
   model_data, outcome, predictors, model_type, loss_function, model_options = list()
 ){
+  # Set some empty variables to pass R checks
+  dummy__ <- NULL
+
   # Create all subsets of predictors with uniquely-identifying names
   predictor_power_set <- generate_power_set(predictors)
   power_set_names <- sapply(predictor_power_set, vector_to_names)
@@ -83,7 +91,7 @@ run_all_covariate_combinations <- function(
 #'    - 'absolute': Shapley value decomposition of each predictor to model performance
 #'    - 'normalized': Same decomposition normalized to sum to one
 #' 
-#' @seealso [vec_to_name] for converting a vector of covariates to a character string
+#' @seealso [vector_to_names] for converting a vector of covariates to a character string
 #' 
 #' @export 
 run_shapley_decomposition <- function(predictors, model_performance_list){
