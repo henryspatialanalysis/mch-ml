@@ -47,7 +47,9 @@ generate_power_set <- function(x){
 #' @return (`character(1)`) A uniquely-identifying string representing this vector
 #' @export
 vector_to_names <- function(x){
+  # Special cases for empty vector
   if(length(x) == 0) return(";;")
+
   x <- x |> unique() |> sort() |> make.names()
   return(paste(x, collapse = ';'))
 }
