@@ -1,8 +1,8 @@
-countries: ["Cote D'Ivoire", "Ghana", "Kenya", "Senegal", "Nigeria", "Philippines"]
-survey_ids: ["CI2021DHS", "GH2022DHS", "KE2022DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
+countries: ["Congo Democratic Republic", "Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria", "Philippines"]
+survey_ids: ["CD2013DHS", "CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2022DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
 versions:
-  prepared_data: '20240201'
-  model_results: '20240208'
+  prepared_data: '20240216'
+  model_results: '20240216'
 directories:
   r_package:
     versioned: FALSE
