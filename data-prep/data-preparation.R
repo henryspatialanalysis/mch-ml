@@ -30,6 +30,11 @@ dir.create(config$get_dir_path('prepared_data'), recursive = T, showWarnings = F
 prepare_countries <- config$get("countries")
 codebook <- config$read('metadata', 'codebook')
 
+acled_country_lookup <- as.list(prepare_countries)
+names(acled_country_lookup) <- prepare_countries
+acled_country_lookup[["Congo Democratic Republic"]] <- 'Democratic Republic of Congo'
+acled_country_lookup[["Cote D'Ivoire"]] <- 'Ivory Coast'
+
 
 ## LOAD DATA FILES ---------------------------------------------------------------------->
 
@@ -65,6 +70,8 @@ for(prepare_country in prepare_countries){
 
   # Prepare "siblings" table - average of living sibling characteristics by mother
   tictoc::tic("  -> Merging sibling characteristics")
+
+  # --> Version 1: All siblings born to the same mother
   mother_id_cols <- c('cluster','hh_id','w_id')
   sibling_cols <- grep('^s_', colnames(microdata_list$births), value = T)
   # Prepare subset births table
@@ -82,6 +89,33 @@ for(prepare_country in prepare_countries){
     by = c(mother_id_cols),
     all.x = TRUE
   )
+
+  # --> Version 2: All siblings born to the same mother *in a 3-year rolling time window*
+  sibling_window_size_years <- 3
+  max_birth_year <- ceiling(max(analysis_table$c_birth_year, na.rm = T))
+  sib_window_range <- seq(max_birth_year - 6 - sibling_window_size_years, max_birth_year)
+  sibling_rolling_window <- (
+    data.table::CJ(c_birth_year = sib_window_range, s_birth_year = sib_window_range)
+    [abs(c_birth_year - s_birth_year) <= sibling_window_size_years, ]
+  )
+  rolling_sibling_characteristics <- (
+    microdata_list$births
+      [, c(mother_id_cols, sibling_cols, 'c_birth_year'), with = F]
+      [, s_birth_year := c_birth_year ]
+      [, c_birth_year := NULL ]
+      [sibling_rolling_window, on = 's_birth_year', allow.cartesian = TRUE]
+      [, c(mother_id_cols, sibling_cols, 'c_birth_year'), with = F]
+      [, lapply(.SD, mean, na.rm = T), by = c(mother_id_cols, 'c_birth_year')]
+  )
+  setnames(rolling_sibling_characteristics, sibling_cols, paste0(sibling_cols, '_roll3yr'))
+  # Merge on the rolling sibling characteristics
+  analysis_table <- merge(
+    x = analysis_table,
+    y = rolling_sibling_characteristics,
+    by = c(mother_id_cols, 'c_birth_year'),
+    all.x = TRUE
+  )
+
   tictoc::toc() # End merging sibling characteristics
 
   # Merge on cluster metadata
@@ -97,7 +131,7 @@ for(prepare_country in prepare_countries){
   tictoc::tic("  -> Preparing buffered conflict data")
   birth_years <- sort(unique(analysis_table$c_birth_year))
   acled_country_conflict_data <- mch.ml::download_acled_data(
-    country_name = if(prepare_country == "Cote D'Ivoire") "Ivory Coast" else prepare_country,
+    country_name = acled_country_lookup[[prepare_country]],
     years = birth_years
   )
   conflict_deaths_spatial <- acled_country_conflict_data[fatalities > 0, ] |>
