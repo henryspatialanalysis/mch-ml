@@ -22,8 +22,14 @@ predicted}
 
 \item{predictors}{(\code{character(N)}) A vector of all candidate models to consider}
 
+\item{model_type}{(\code{character(1)}) Machine learning method to use, passed to caret.}
+
 \item{loss_function}{A function that generates average model error given two vectors,
 the two observations and the predicted risks.}
+
+\item{model_options}{(\code{list(N)}, defaults to an empty list) Named list containing the
+names of tuning parameters to be passed to caret. If arguments are not passed, the
+caret defaults will be used.}
 }
 \value{
 A named list, with names formatted as "cov_a+cov_b+cov_c+..." giving the model
@@ -37,6 +43,6 @@ Run a predictive model using all possible combinations from a list of
 covariates and return the loss function for each combination.
 }
 \seealso{
-\link{loss_functions} For defining the loss function, \link{vec_to_name} for converting
-a vector of covariates to a character string
+\link{get_loss_function} For defining the loss function, \link{vector_to_names} for
+converting a vector of covariates to a character string
 }

@@ -28,5 +28,5 @@ using all combinations of those predictors, assign relative importance of each
 covariate to overall model performance
 }
 \seealso{
-\link{vec_to_name} for converting a vector of covariates to a character string
+\link{vector_to_names} for converting a vector of covariates to a character string
 }
