@@ -42,6 +42,8 @@ reshape_dhs_covariates <- function(
     [, val_n := nafill(value, 'nocb') ]
     [, runlength := rleid(value) ]
     [, missings := max(.N + 1, 2), by = runlength]
+    [is.na(value) & year < min(tv_covs$year), value := val_n ] # Before first recorded year
+    [is.na(value) & year > max(tv_covs$year), value := val_p ] # After last recorded year
     [is.na(value), value := val_p + .SD[,.I] * (val_n - val_p) / missings, by = runlength ]
     [is.na(value), value := val_p ]
     [is.na(value), value := val_n ]
