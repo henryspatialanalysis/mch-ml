@@ -19,5 +19,6 @@ Data access:
 - [ACLED data platform](https://developer.acleddata.com)
 
 Methods:
+- `caret` [package documentation](https://topepo.github.io/caret/) and [available models](https://topepo.github.io/caret/available-models.html)
 - [SAGE introductory paper](https://arxiv.org/abs/2004.00668) and [blog post](https://iancovert.com/blog/understanding-shap-sage/)
 - [SAGE Python repository](https://github.com/iancovert/sage)
