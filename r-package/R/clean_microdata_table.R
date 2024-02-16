@@ -48,6 +48,15 @@ interpret_text_as_integers <- function(text){
 #' @importFrom glue glue
 #' @export
 clean_microdata_using_codebook <- function(microdata, codebook){
+  # Define some empty variables to pass R checks
+  (original_var <- rename <- include <- c_died_pnn <- c_alive <- c_died_age_months <-
+    c_age_months <- c_maternal_age <- c_birth_cmc <- w_born_cmc <- c_birth_year <- 
+    int_month_cmc <- c_lbw <- p_birth_weight <- water_time <- p_sba <- p_anc1 <- p_anc4 <-
+    p_anc8 <- p_anc_times <- s_stunt_modsev <- s_stunt_sev <- s_waste_modsev <- 
+    s_waste_sev <- s_underweight_modsev <- s_underweight_sev <- s_haz_stdev <- 
+    s_whz_stdev <- s_waz_stdev <- b_10y_prior <- NULL
+  )
+
   # Confirm that required fields are available
   cb_required_fields <- c('original_var', 'rename', 'missing', 'include')
   missing_fields <- setdiff(cb_required_fields, colnames(codebook))
@@ -64,8 +73,7 @@ clean_microdata_using_codebook <- function(microdata, codebook){
   }
   codebook <- codebook[original_var %in% colnames(microdata), ]
   # Subset microdata to the original_var fields listed in the codebook
-  subset_fields <- codebook$original_var
-  m_clean <- microdata[, ..subset_fields]
+  m_clean <- microdata[, codebook$original_var, with = FALSE]
   colnames(m_clean) <- codebook$rename
 
   # Update missing values
@@ -92,6 +100,12 @@ clean_microdata_using_codebook <- function(microdata, codebook){
   ## ** CUSTOM RECODES **
   prepared_cols <- colnames(m_clean)
 
+  # If age in months is missing, assign it for living children
+  if(!'c_age_months' %in% prepared_cols){
+    m_clean[, c_age_months := round(int_month_cmc - c_birth_cmc) ]
+    prepared_cols <- colnames(m_clean)
+  }
+
   # Was this death in the 1-59 months range?
   if(all(c('c_alive', 'c_age_months', 'c_died_age_months') %in% prepared_cols)){
     # Start with 0
@@ -101,8 +115,6 @@ clean_microdata_using_codebook <- function(microdata, codebook){
       (c_alive == 0L) & (c_died_age_months >= 1L) & (c_died_age_months <= 59L),
       c_died_pnn := 1L
     ]
-    # Exclude living children under 5
-    m_clean[(c_alive == 1L) & (c_age_months <= 59), c_died_pnn := NA_integer_ ]
     # Exclude neonatal deaths
     m_clean[(c_alive == 0L) & (c_died_age_months < 1), c_died_pnn := NA_integer_ ]
     # Exclude any NAs in child_alive or (for living children) child_age_months
@@ -117,9 +129,9 @@ clean_microdata_using_codebook <- function(microdata, codebook){
     m_clean[, c_birth_year := 1900L + floor(c_birth_cmc / 12)]
   }
 
-  # Subset only to births in the 10 years prior to the interview
+  # Tag births greater than 10 years prior to the interview
   if(all(c('c_birth_cmc', 'int_month_cmc') %in% prepared_cols)){
-    m_clean <- m_clean[((int_month_cmc - c_birth_cmc) <= 120), ]
+    m_clean[, b_10y_prior := as.integer((int_month_cmc - c_birth_cmc) <= 120) ]
   }
 
   # Create binary indicator for low birth weight, if available
