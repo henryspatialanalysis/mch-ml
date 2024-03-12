@@ -52,7 +52,7 @@ ImportanceTracker <- R6::R6Class(
       }
       self$n_obs[ws] <- self$n_obs[ws] + 1
       diff <- scores - self$importance[ws]
-      self$importance[ws] <- self$importance[ws] + (scores / self$n_obs[ws])
+      self$importance[ws] <- self$importance[ws] + (diff / self$n_obs[ws])
       diff2 <- scores - self$importance[ws]
       self$sum_of_squares[ws] <- self$sum_of_squares[ws] + (diff * diff2)
       # Return null
@@ -76,20 +76,33 @@ ImportanceTracker <- R6::R6Class(
     #' 
     #' @seealso importance_variance(), converged()
     importance_std_dev = function(){
-      return(sqrt(self$importance_variance()))
+      return(suppressWarnings(sqrt(self$importance_variance())))
     },
 
-    #' @description Check if importance measurements have converged
+    #' @description Get the 'convergence ratio' between the maximum standard deviation of
+    #'   any observation and the difference between largest and smallest observations
     #' 
-    #' @seealso importance_std_dev()
+    #' @seealso self$importance_std_dev() self$converged() 
     #' 
-    #' @return logical(1) value for whether the model has converged
-    converged = function(){
-      if(max(self$n_obs) < 2L) stop("Cannot test for convergence before first iteration.")
+    #' @return numeric(1) for convergence ratio; compare to self$convergence_threshold
+    get_convergence_ratio = function(){
+      # Cannot test before the second iteration
+      if(max(self$n_obs) < 2L) return(NA_real_)
+
       max_std <- self$importance_std_dev() |> max()
       gap <- range(self$importance) |> diff() |> max(1e-12)
       convergence_ratio <- max_std / gap
-      return(convergence_ratio < self$convergence_threshold)
+      return(convergence_ratio)
+    },
+
+    #' @description Determine whether the importance values have converged
+    #' 
+    #' @seealso self$get_convergence_ratio()
+    #' 
+    #' @return logical(1) value for whether the model has converged
+    converged = function(){
+      c_ratio <- self$get_convergence_ratio()
+      return(!is.na(c_ratio) & (c_ratio < self$convergence_threshold))
     }
   )
 )
