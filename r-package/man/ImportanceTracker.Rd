@@ -19,7 +19,9 @@ importance_std_dev()
 
 importance_variance(), converged()
 
-importance_std_dev()
+self$importance_std_dev() self$converged()
+
+self$get_convergence_ratio()
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -47,6 +49,7 @@ values have effectively converged.}
 \item \href{#method-ImportanceTracker-update}{\code{ImportanceTracker$update()}}
 \item \href{#method-ImportanceTracker-importance_variance}{\code{ImportanceTracker$importance_variance()}}
 \item \href{#method-ImportanceTracker-importance_std_dev}{\code{ImportanceTracker$importance_std_dev()}}
+\item \href{#method-ImportanceTracker-get_convergence_ratio}{\code{ImportanceTracker$get_convergence_ratio()}}
 \item \href{#method-ImportanceTracker-converged}{\code{ImportanceTracker$converged()}}
 \item \href{#method-ImportanceTracker-clone}{\code{ImportanceTracker$clone()}}
 }
@@ -122,10 +125,24 @@ importance measure for each variable
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-ImportanceTracker-get_convergence_ratio"></a>}}
+\if{latex}{\out{\hypertarget{method-ImportanceTracker-get_convergence_ratio}{}}}
+\subsection{Method \code{get_convergence_ratio()}}{
+Get the 'convergence ratio' between the maximum standard deviation of
+any observation and the difference between largest and smallest observations
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{ImportanceTracker$get_convergence_ratio()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+numeric(1) for convergence ratio; compare to self$convergence_threshold
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-ImportanceTracker-converged"></a>}}
 \if{latex}{\out{\hypertarget{method-ImportanceTracker-converged}{}}}
 \subsection{Method \code{converged()}}{
-Check if importance measurements have converged
+Determine whether the importance values have converged
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{ImportanceTracker$converged()}\if{html}{\out{</div>}}
 }

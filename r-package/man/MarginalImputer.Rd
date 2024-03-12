@@ -14,6 +14,8 @@ data, replacing removed features with their marginal distributions.
 }
 \seealso{
 https://github.com/iancovert/sage/blob/master/sage/imputers.py#L44
+
+wrapper function for MarginalImputer$predict()
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -23,6 +25,12 @@ https://github.com/iancovert/sage/blob/master/sage/imputers.py#L44
 \item{\code{features_table}}{Table of all possible features to use for prediction}
 
 \item{\code{features}}{(\code{character(N)}) Names of model features used in the full model}
+
+\item{\code{outcomes}}{(\code{numeric(nrow(features_table))}) Vector of outcomes corresponding
+to each row of \code{features_table}}
+
+\item{\code{loss_fun}}{(function) Loss function taking two numeric vectors of equal
+length, outcomes and predicted outcomes, and returning the total model loss}
 }
 \if{html}{\out{</div>}}
 }
@@ -31,6 +39,7 @@ https://github.com/iancovert/sage/blob/master/sage/imputers.py#L44
 \itemize{
 \item \href{#method-MarginalImputer-new}{\code{MarginalImputer$new()}}
 \item \href{#method-MarginalImputer-predict}{\code{MarginalImputer$predict()}}
+\item \href{#method-MarginalImputer-get_loss}{\code{MarginalImputer$get_loss()}}
 \item \href{#method-MarginalImputer-clone}{\code{MarginalImputer$clone()}}
 }
 }
@@ -40,7 +49,7 @@ https://github.com/iancovert/sage/blob/master/sage/imputers.py#L44
 \subsection{Method \code{new()}}{
 Create a new MarginalImputer object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$new(model, features_table)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$new(model, features_table, outcomes, loss_fun)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -51,6 +60,12 @@ the \code{predict()} function.}
 
 \item{\code{features_table}}{(\code{data.frame}) Table with columns corresponding to features
 in the \code{model}}
+
+\item{\code{outcomes}}{(\code{numeric(nrow(features_table))}) Vector of outcomes corresponding
+to each row of \code{features_table}}
+
+\item{\code{loss_fun}}{(function) Loss function taking two numeric vectors of equal
+length, outcomes and predicted outcomes, and returning the total model loss}
 }
 \if{html}{\out{</div>}}
 }
@@ -62,6 +77,24 @@ in the \code{model}}
 Fit the predictive model with a subset of features
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$predict(feature_subset)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{feature_subset}}{(\code{character(N)}) A subset of features to use for this model
+version. All other features will be marginalized out.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MarginalImputer-get_loss"></a>}}
+\if{latex}{\out{\hypertarget{method-MarginalImputer-get_loss}{}}}
+\subsection{Method \code{get_loss()}}{
+Get total model loss for a subset of features
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$get_loss(feature_subset)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
