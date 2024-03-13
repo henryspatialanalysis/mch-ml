@@ -50,7 +50,7 @@ for(country in all_countries){
   if(nrow(country_adm0) == 0L) stop("Could not find a shapefile match for ", match_name)
 
   # Plot results
-  if(country %in% c('Kenya', 'Philippines')){
+  if(country %in% c('Kenya', 'Philippines','Madagascar')){
     color_limits <- c(0, 0.15)
     color_breaks <- seq(0, 0.15, by = 0.05)
     color_labels <- c('0%','5%','10%','15%+')
