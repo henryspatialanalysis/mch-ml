@@ -73,7 +73,7 @@ for(prepare_country in prepare_countries){
 
   # --> Version 1: All siblings born to the same mother
   mother_id_cols <- c('cluster','hh_id','w_id')
-  sibling_cols <- grep('^s_', colnames(microdata_list$births), value = T)
+  sibling_cols <- grep('^s_|^p_', colnames(microdata_list$births), value = T)
   # Prepare subset births table
   births_keep_cols <- setdiff(colnames(microdata_list$births), sibling_cols)
   analysis_table <- microdata_list$births[!is.na(c_died_pnn), ..births_keep_cols]
@@ -115,8 +115,15 @@ for(prepare_country in prepare_countries){
     by = c(mother_id_cols, 'c_birth_year'),
     all.x = TRUE
   )
-
   tictoc::toc() # End merging sibling characteristics
+
+  # Split birth histories by age group
+  analysis_table <- mch.ml::split_ages(
+    data = analysis_table,
+    age_groups = config$get('age_groups'),
+    max_timediff_months = 10 * 12, # 10 year gap
+    child_id_columns = c('cluster', 'hh_id', 'w_id', 'birth_id')
+  )
 
   # Merge on cluster metadata
   cluster_metadata <- as.data.table(microdata_list$geographic.data)[, .(
@@ -129,10 +136,10 @@ for(prepare_country in prepare_countries){
 
   # Load country conflict data
   tictoc::tic("  -> Preparing buffered conflict data")
-  birth_years <- sort(unique(analysis_table$c_birth_year))
+  analysis_years <- sort(unique(analysis_table$bh_year))
   acled_country_conflict_data <- mch.ml::download_acled_data(
     country_name = acled_country_lookup[[prepare_country]],
-    years = birth_years
+    years = analysis_years
   )
   conflict_deaths_spatial <- acled_country_conflict_data[fatalities > 0, ] |>
     sf::st_as_sf(coords = c('longitude', 'latitude'), crs = sf::st_crs('EPSG:4326'))
@@ -149,14 +156,14 @@ for(prepare_country in prepare_countries){
     )
     conflict_deaths_agg <- as.data.table(conflict_deaths_by_cluster)[
       , .(conflict_deaths = sum(fatalities)),
-      by = .(cluster = DHSCLUST, c_birth_year = data.table::year(event_date))
+      by = .(cluster = DHSCLUST, bh_year = data.table::year(event_date))
     ]
     # Merge onto the analysis table
     new_conflict_col_name <- paste0('acled_deaths_', buffer_radius_km, 'km')
     analysis_table[
       conflict_deaths_agg,
       (new_conflict_col_name) := nafill(i.conflict_deaths, fill = 0),
-      on = c('cluster', 'c_birth_year')
+      on = c('cluster', 'bh_year')
     ]
   }
   tictoc::toc() # End conflict data merge
@@ -165,13 +172,13 @@ for(prepare_country in prepare_countries){
   tictoc::tic("  -> Preparing and merging DHS spatial covariates")
   reshaped_covariates <- mch.ml::reshape_dhs_covariates(
     covs_table = microdata_list$geospatial.covariates,
-    measure_years = birth_years,
+    measure_years = analysis_years,
     id_col = 'DHSCLUST'
   )
   analysis_table <- merge(
     x = analysis_table,
     y = reshaped_covariates,
-    by.x = c('cluster', 'c_birth_year'),
+    by.x = c('cluster', 'bh_year'),
     by.y = c('DHSCLUST', 'year')
   )
   tictoc::toc() # End geospatial covariate prep

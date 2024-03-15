@@ -1,8 +1,15 @@
 countries: ["Congo Democratic Republic", "Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria", "Philippines"]
 survey_ids: ["CD2013DHS", "CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2022DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
+age_groups:
+  a01mo: [1, 6]
+  a06mo: [6, 12]
+  a12mo: [12, 24]
+  a24mo: [24, 36]
+  a36mo: [36, 48]
+  a48mo: [48, 60]
 versions:
-  prepared_data: '20240216'
-  model_results: '20240216'
+  prepared_data: '20240312'
+  model_results: '20240312'
 directories:
   r_package:
     versioned: FALSE
@@ -11,7 +18,7 @@ directories:
     versioned: FALSE
     path: '~/temp_data/usaid-mch-ml/metadata'
     files:
-      codebook: 'codebook_20240201.csv'
+      codebook: 'codebook_20240215.csv'
   prepared_data:
     versioned: TRUE
     path: '~/temp_data/usaid-mch-ml/prepared_data'
