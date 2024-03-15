@@ -162,9 +162,9 @@ for(prepare_country in prepare_countries){
     new_conflict_col_name <- paste0('acled_deaths_', buffer_radius_km, 'km')
     analysis_table[
       conflict_deaths_agg,
-      (new_conflict_col_name) := nafill(i.conflict_deaths, fill = 0),
+      (new_conflict_col_name) := i.conflict_deaths,
       on = c('cluster', 'bh_year')
-    ]
+    ][is.na(get(new_conflict_col_name)), (new_conflict_col_name) := 0L ]
   }
   tictoc::toc() # End conflict data merge
 
