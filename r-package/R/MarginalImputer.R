@@ -14,8 +14,12 @@ MarginalImputer <- R6::R6Class(
     model = NULL,
     #' @field features_table Table of all possible features to use for prediction
     features_table = NULL,
-    #' @field features (`character(N)`) Names of model features used in the full model
+    #' @field features (`character(N)`) Names of model features used in the full model that
+    #'   can be toggled.
     features = NULL,
+    #' @field default_features (`character(N)`) Names of model features used in the full
+    #'   model that cannot be toggled
+    default_features = NULL,
     #' @field outcomes (`numeric(nrow(features_table))`) Vector of outcomes corresponding
     #'   to each row of `features_table`
     outcomes = NULL,
@@ -33,13 +37,20 @@ MarginalImputer <- R6::R6Class(
     #'   to each row of `features_table`
     #' @param loss_fun (function) Loss function taking two numeric vectors of equal
     #'   length, outcomes and predicted outcomes, and returning the total model loss
-    initialize = function(model, features_table, outcomes, loss_fun){
+    #' @param default_features (`character(N)`, default `NULL`) The features that will
+    #'   be included in every model permutation by default. Not listed in self$features
+    #'   because they cannot be toggled
+    initialize = function(model, features_table, outcomes, loss_fun, default_features = NULL){
       # Add as fields
       self$model <- model
       self$features_table <- features_table
-      self$features <- model$terms |> attr('term.labels')
+      self$default_features <- default_features
+      self$features <- model$terms |> attr('term.labels') |> setdiff(default_features)
       if(is.null(self$features)) stop("Issue with model - no features found")
-      missing_features <- setdiff(self$features, colnames(features_table))
+      missing_features <- setdiff(
+        c(self$features, self$default_features),
+        colnames(features_table)
+      )
       if(length(missing_features) > 0){
         stop("Missing some features in data: ", paste(missing_features, collapse = ', '))
       }
@@ -67,7 +78,7 @@ MarginalImputer <- R6::R6Class(
       subset_data <- copy(self$features_table)
       for(marg in marginal_features) subset_data[[marg]] <- mean(subset_data[[marg]])
       # Return predictions based on the subset data
-      return(predict(self$model, newdata = subset_data))
+      return(predict(self$model, newdata = subset_data, type = "prob")[, as.character(1)])
     },
 
     #' @description Get total model loss for a subset of features
