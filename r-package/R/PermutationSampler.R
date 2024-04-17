@@ -98,8 +98,10 @@ PermutationSampler <- R6::R6Class(
       # Iteratively calculate loss function when adding each additional feature
       while((ii < self$num_features) & !self$loss_below_threshold(losses[ii])){
         losses[ii + 1] <- self$imputer$get_loss(feature_order[seq_len(ii)])
+        if(self$verbose) message(".", appendLF = FALSE)
         ii <- ii + 1
       }
+      message("")
       # If the stopping condition is met early, split the tiny bit of remaining loss
       #  between the remaining items
       na_positions <- which(is.na(losses))
@@ -133,7 +135,7 @@ PermutationSampler <- R6::R6Class(
     #' @param run_all (`logical(1)` or "detect", default "detect") Should all permutations
     #'   of importance values be run rather than sampling from the universe of model
     #'   permutations? If "detect", only runs the full set of permutations for models with
-    #'   10 features or fewer.
+    #'   7 features or fewer.
     #' @param min_iterations (`numeric(1)`, default 100) Minimum number of samples to take
     #'   before checking for feature importance convergence.
     #' @param max_iterations (`numeric(1)`, default 1e7) Maximum number of samples to take
