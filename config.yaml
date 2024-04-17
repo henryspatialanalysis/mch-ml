@@ -1,5 +1,17 @@
 countries: ["Congo Democratic Republic", "Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria", "Philippines"]
 survey_ids: ["CD2013DHS", "CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2022DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
+completeness_threshold: 0.5
+n_imputations: 5
+fields:
+  ids: ['cluster', 'bh_year', 'hh_id', 'w_id', 'birth_id', 'admin1_code', 'admin1_name']
+  outcome: 'died'
+  hidden: [
+    'age_group', 'c_birth_year', 'w_sample_weight', 'int_month_cmc', 'c_died_age_months',
+    'c_birth_int', 's_stunt_modsev', 's_stunt_sev', 's_waste_modsev', 's_waste_sev',
+    's_underweight_modsev', 's_underweight_sev', 's_stunt_modsev_roll3yr',
+    's_stunt_sev_roll3yr', 's_waste_modsev_roll3yr', 's_waste_sev_roll3yr',
+    's_underweight_modsev_roll3yr', 's_underweight_sev_roll3yr'
+  ]
 age_groups:
   a01mo: [1, 6]
   a06mo: [6, 12]
@@ -9,7 +21,8 @@ age_groups:
   a48mo: [48, 60]
 versions:
   prepared_data: '20240312'
-  model_results: '20240312'
+  imputed_data: '20240417'
+  model_results: '20240417'
 directories:
   r_package:
     versioned: FALSE
@@ -25,6 +38,9 @@ directories:
   model_results:
     versioned: TRUE
     path: '~/temp_data/usaid-mch-ml/model_results'
+  imputed_data:
+    versioned: TRUE
+    path: '~/temp_data/usaid-mch-ml/imputed_data'
   shps:
     versioned: FALSE
     path: '/mnt/c/Users/Lenovo/OneDrive - Henry Spatial Analysis LLC/Henry Spatial Analysis/DHS/Sharing/Updated GAUL shapefile/updated_gaul_v2'
