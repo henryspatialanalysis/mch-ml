@@ -162,8 +162,9 @@ PermutationSampler <- R6::R6Class(
           (perm_ii <= max_iterations) & 
           ((perm_ii <= min_iterations) | !self$importance_tracker$converged())
         ){
+          if(self$verbose) message("Permutation ", perm_ii)
           self$run_one_permutation()
-          if((perm_ii %% 1000 == 0) & self$verbose){
+          if((perm_ii %% 5 == 0) & self$verbose){
             # Optionally add logging message
             c_ratio <- self$importance_tracker$get_convergence_ratio()
             message(glue::glue(
