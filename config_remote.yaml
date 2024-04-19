@@ -21,7 +21,7 @@ fields:
     "Mean_Temperature", 'Maximum_Temperature', 'Minimum_Temperature',
     "Night_Land_Surface_Temp", "acled_deaths_10km", "acled_deaths_50km", "acled_deaths_100km",
     "w_born_cmc", "Aridity", "PET", "Wet_Days", "Enhanced_Vegetation_Index",
-    "Growing_Season_Length", "Irrigation", "Livestock_Pigs"
+    "Growing_Season_Length", "Irrigation", "Livestock_Pigs", "ITN_Coverage"
   ]
 age_groups:
   a01mo: [1, 6]
