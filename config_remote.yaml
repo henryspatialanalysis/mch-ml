@@ -19,8 +19,9 @@ fields:
     'Temperature_September', 'Temperature_October', 'Temperature_November',
     'Temperature_December', 'Travel_Times', 'Rainfall', 'Malaria_Prevalence',
     "Mean_Temperature", 'Maximum_Temperature', 'Minimum_Temperature',
-    "Night_Land_Surface_Temp", "acled_deaths_10km", "acled_deaths_25km", "acled_deaths_100km",
-    "w_born_cmc"
+    "Night_Land_Surface_Temp", "acled_deaths_10km", "acled_deaths_50km", "acled_deaths_100km",
+    "w_born_cmc", "Aridity", "PET", "Wet_Days", "Enhanced_Vegetation_Index",
+    "Growing_Season_Length", "Irrigation", "Livestock_Pigs"
   ]
 age_groups:
   a01mo: [1, 6]
