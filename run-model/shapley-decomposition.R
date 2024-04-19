@@ -11,12 +11,12 @@
 ## Setup
 
 # Set globals
-REPO_FP <- '~/repos/usaid-mch-ml/r-package'
-CONFIG_FP <- file.path('~/repos/usaid-mch-ml/config.yaml')
-METHOD <- 'glm'
+REPO_FP <- '~/efs-mount/repos/usaid-mch-ml/r-package'
+CONFIG_FP <- file.path('~/efs-mount/repos/usaid-mch-ml/config_remote.yaml')
 
 survey_id <- 'GH2022DHS'
 imp_ii <- 1
+METHOD <- 'rf'
 
 # Load packages
 load_libs <- c('versioning', 'data.table', 'caret', 'glue')
@@ -27,9 +27,7 @@ devtools::load_all(REPO_FP)
 config <- versioning::Config$new(CONFIG_FP)
 
 results_dir <- config$get_dir_path('model_results')
-dir.create(results_dir, recursive = T)
-config$write_self('model_results')
-
+if(!dir.exists(results_dir)) stop("Results directory does not exist")
 
 ## Fit model
 
@@ -45,6 +43,9 @@ feature_fields <- setdiff(
 )
 # Drop any fields with missing values
 for(ff in feature_fields){
+  # Normalize
+  model_data[[ff]] <- (model_data[[ff]] - mean(model_data[[ff]])) / sd(model_data[[ff]])
+  # Drop NAs
   if(any(is.na(model_data[[ff]]))) feature_fields <- setdiff(feature_fields, ff)
 }
 message(glue::glue(
@@ -63,7 +64,6 @@ model_fit <- caret::train(
     "{paste(c(age_group_fields, feature_fields), collapse = ' + ')}"
   ) |> as.formula(),
   data = model_data,
-  preProcess = c("center", "scale"),
   method = METHOD,
   trControl = caret::trainControl(method = 'cv', number = 5)
 )
@@ -79,7 +79,7 @@ marginal_imputer <- mch.ml::MarginalImputer$new(
 # Sample permutations
 model_sampler <- mch.ml::PermutationSampler$new(
   imputer = marginal_imputer,
-  convergence_threshold = 0.05,
+  convergence_threshold = 0.1,
   verbose = TRUE
 )
 model_sampler$sample(run_all = FALSE, min_iterations = 3L)
