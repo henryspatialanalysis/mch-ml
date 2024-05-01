@@ -13,10 +13,16 @@
 # Set globals
 REPO_FP <- '~/efs-mount/repos/usaid-mch-ml/r-package'
 CONFIG_FP <- file.path('~/efs-mount/repos/usaid-mch-ml/config_remote.yaml')
-
 survey_id <- 'GH2022DHS'
-imp_ii <- 1
-METHOD <- 'rf'
+
+parser <- argparse::ArgumentParser()
+parser$add_argument('--imp', type = 'integer')
+parser$add_argument('--method', type = 'character')
+args <- parser$parse_args(commandArgs(trailingOnly = TRUE))
+imp_ii <- args$imp # Imputation version
+METHOD <- args$method # 'bayesglm', 'plr', 'xgbDART', 'svmRadial', 'rf' 
+
+if(is.null(imp_ii) | is.null(METHOD)) stop("Issue with command line arguments.")
 
 # Load packages
 load_libs <- c('versioning', 'data.table', 'caret', 'glue')
@@ -56,7 +62,6 @@ message(glue::glue(
 outcome_field <- config$get('fields', 'outcome')
 model_data[[outcome_field]] <- factor(model_data[[outcome_field]])
 
-
 # Fit full model and create marginal imputer
 model_fit <- caret::train(
   form = glue::glue(
@@ -75,6 +80,7 @@ marginal_imputer <- mch.ml::MarginalImputer$new(
   default_features = age_group_fields,
   loss_fun = mch.ml::get_loss_function('L2')
 )
+# marginal_imputer$get_loss(marginal_imputer$features)
 
 # Sample permutations
 model_sampler <- mch.ml::PermutationSampler$new(
@@ -102,5 +108,12 @@ total_improvement <- shapley_vals_dt[, sum(shapley_value)]
   [, shapley_value := shapley_value_norm * total_improvement ]
 )
 fwrite(shapley_vals_dt, file = glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}.csv"))
+
+# Save full model loss and null model loss
+loss_types_dt <- data.table::data.table(
+  model_type = c("Full", "Null"),
+  loss = c(model_sampler$full_model_loss, model_sampler$null_model_loss)
+)
+fwrite(loss_types_dt, file = glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}_loss_types.csv"))
 
 tictoc::toc() # End model imputation
