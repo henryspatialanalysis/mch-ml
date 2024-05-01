@@ -146,7 +146,7 @@ importance values are fully described
 \item{\code{run_all}}{(\code{logical(1)} or "detect", default "detect") Should all permutations
 of importance values be run rather than sampling from the universe of model
 permutations? If "detect", only runs the full set of permutations for models with
-10 features or fewer.}
+7 features or fewer.}
 
 \item{\code{min_iterations}}{(\code{numeric(1)}, default 100) Minimum number of samples to take
 before checking for feature importance convergence.}
