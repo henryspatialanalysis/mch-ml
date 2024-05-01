@@ -24,7 +24,11 @@ wrapper function for MarginalImputer$predict()
 
 \item{\code{features_table}}{Table of all possible features to use for prediction}
 
-\item{\code{features}}{(\code{character(N)}) Names of model features used in the full model}
+\item{\code{features}}{(\code{character(N)}) Names of model features used in the full model that
+can be toggled.}
+
+\item{\code{default_features}}{(\code{character(N)}) Names of model features used in the full
+model that cannot be toggled}
 
 \item{\code{outcomes}}{(\code{numeric(nrow(features_table))}) Vector of outcomes corresponding
 to each row of \code{features_table}}
@@ -49,7 +53,13 @@ length, outcomes and predicted outcomes, and returning the total model loss}
 \subsection{Method \code{new()}}{
 Create a new MarginalImputer object
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$new(model, features_table, outcomes, loss_fun)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$new(
+  model,
+  features_table,
+  outcomes,
+  loss_fun,
+  default_features = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -66,6 +76,10 @@ to each row of \code{features_table}}
 
 \item{\code{loss_fun}}{(function) Loss function taking two numeric vectors of equal
 length, outcomes and predicted outcomes, and returning the total model loss}
+
+\item{\code{default_features}}{(\code{character(N)}, default \code{NULL}) The features that will
+be included in every model permutation by default. Not listed in self$features
+because they cannot be toggled}
 }
 \if{html}{\out{</div>}}
 }
@@ -94,7 +108,7 @@ version. All other features will be marginalized out.}
 \subsection{Method \code{get_loss()}}{
 Get total model loss for a subset of features
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$get_loss(feature_subset)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$get_loss(feature_subset, epsilon = 1e-06)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -102,6 +116,9 @@ Get total model loss for a subset of features
 \describe{
 \item{\code{feature_subset}}{(\code{character(N)}) A subset of features to use for this model
 version. All other features will be marginalized out.}
+
+\item{\code{epsilon}}{(\code{numeric(1)}) The amount that very small (or large) probability
+estimates should be perturbed from zero (or one)}
 }
 \if{html}{\out{</div>}}
 }

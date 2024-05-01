@@ -85,10 +85,15 @@ MarginalImputer <- R6::R6Class(
     #' 
     #' @param feature_subset (`character(N)`) A subset of features to use for this model
     #'   version. All other features will be marginalized out.
+    #' @param epsilon (`numeric(1)`) The amount that very small (or large) probability
+    #'   estimates should be perturbed from zero (or one)
     #' 
     #' @seealso wrapper function for MarginalImputer$predict()
-    get_loss = function(feature_subset){
+    get_loss = function(feature_subset, epsilon = 1e-6){
       predictions <- self$predict(feature_subset)
+      # Predictions should not be exactly zero or one
+      predictions[predictions < epsilon] <- epsilon
+      predictions[predictions > (1 - epsilon)] <- (1 - epsilon)
       loss <- self$loss_fun(self$outcomes, predictions)
       return(loss)
     }
