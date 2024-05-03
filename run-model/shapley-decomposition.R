@@ -99,7 +99,7 @@ marginal_imputer <- mch.ml::MarginalImputer$new(
 # Create permutation sampler object
 model_sampler <- mch.ml::PermutationSampler$new(
   imputer = marginal_imputer,
-  convergence_threshold = 0.1,
+  convergence_threshold = 0.12,
   verbose = TRUE
 )
 
