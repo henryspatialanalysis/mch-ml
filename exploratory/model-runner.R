@@ -91,7 +91,7 @@ while(!is.null(claimed_job)){
     update_status(claimed_job, new_status = 'errored')
   }
   # Claim the next job
-  claimed_job <- claim_job()
+  claimed_job <- claim_jobs()
 }
 
 tictoc::toc()
