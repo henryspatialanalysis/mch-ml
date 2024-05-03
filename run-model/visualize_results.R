@@ -70,7 +70,7 @@ theme_sort <- (shapley_meta
 )
 # Get relative importance within themes
 feature_sort <- (shapley_meta
-  [, .(importance = sum(shapley_value)), by = .(feature)]
+  [, .(importance = sum(shapley_value)), by = .(feature, theme)]
   [order(theme, -importance)]
   [, feature_rank := seq_len(nrow(.SD)), by = theme ]
 )
@@ -106,7 +106,7 @@ shapley_fig <- ggplot(data = shapley_meta) +
   labs(
     title = 'Shapley decomposition: Ghana',
     x = 'Model',
-    y = "Shapley normalized feature importance",
+    y = "Shapley absolute feature importance",
     fill = "Feature"
   ) +
   scale_fill_manual(values = color_palette) + 
