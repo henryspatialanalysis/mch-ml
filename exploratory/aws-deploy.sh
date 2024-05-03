@@ -42,5 +42,6 @@ sudo R CMD INSTALL ~/efs-mount/repos/colorout;
 # sudo rm -rf /usr/local/lib/R/site-library/00LOCK-*
 sudo R -e "install.packages(setdiff(c( \
   'data.table', 'R6', 'caret', 'glue', 'gtools', 'haven', 'httr', 'rdhs', 'sf', 'stats', \
-  'tictoc', 'utils', 'xgboost', 'stepPlr', 'randomForest', 'ada', 'caTools' \
+  'tictoc', 'utils', 'xgboost', 'stepPlr', 'randomForest', 'ada', 'caTools', 'devtools', \
+  'osmdata', 'r5r', 'rJava', 'tidytransit' \
 ), installed.packages()[, 'Package']))";
