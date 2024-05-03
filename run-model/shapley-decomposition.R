@@ -13,16 +13,17 @@
 # Set globals
 REPO_FP <- '~/efs-mount/repos/usaid-mch-ml/r-package'
 CONFIG_FP <- file.path('~/efs-mount/repos/usaid-mch-ml/config_remote.yaml')
-survey_id <- 'GH2022DHS'
 
 parser <- argparse::ArgumentParser()
 parser$add_argument('--imp', type = 'integer')
 parser$add_argument('--method', type = 'character')
+parser$add_argument('--survey', type = 'character')
 args <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 imp_ii <- args$imp # Imputation version
-METHOD <- args$method # 'bayesglm', 'plr', 'xgbDART', 'svmRadial', 'rf' 
+METHOD <- args$method # 'plr', 'xgbTree', 'treebag', 'rf', 'LogitBoost', 'gam', 'glm', 'ada'
+survey_id <- args$survey # e.g. 'GH2022DHS'
 
-if(is.null(imp_ii) | is.null(METHOD)) stop("Issue with command line arguments.")
+if(is.null(imp_ii) | is.null(METHOD) | is.null(survey_id)) stop("Issue with command line arguments.")
 
 # Load packages
 load_libs <- c('versioning', 'data.table', 'caret', 'glue')
@@ -34,6 +35,7 @@ config <- versioning::Config$new(CONFIG_FP)
 
 results_dir <- config$get_dir_path('model_results')
 if(!dir.exists(results_dir)) stop("Results directory does not exist")
+out_file_base <- glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}")
 
 ## Fit model
 
@@ -62,8 +64,8 @@ message(glue::glue(
 outcome_field <- config$get('fields', 'outcome')
 model_data[[outcome_field]] <- factor(model_data[[outcome_field]])
 
-# Fit full model and create marginal imputer
-model_fit <- caret::train(
+# Fit full model
+model_terms_list <- list(
   form = glue::glue(
     "{outcome_field} ~ ",
     "{paste(c(age_group_fields, feature_fields), collapse = ' + ')}"
@@ -72,7 +74,20 @@ model_fit <- caret::train(
   method = METHOD,
   trControl = caret::trainControl(method = 'cv', number = 5)
 )
+if(METHOD == 'glm') model_terms_list$family <- 'binomial'
+model_fit <- do.call(what = caret::train, args = model_terms_list)
+
+# Save out full model predictions
 model_data[[outcome_field]] <- as.numeric(as.character(model_data[[outcome_field]]))
+full_model_predictions <- data.table::data.table(
+  predicted = predict(model_fit, newdata = model_data, type = 'prob')[, as.character(1)],
+  observed = model_data[[outcome_field]]
+)
+data.table::fwrite(full_model_predictions, file = glue::glue("{out_file_base}_predictions.csv"))
+
+## Run shapley decomposition ------------------------------------------------------------>
+
+# Create marginal imputer
 marginal_imputer <- mch.ml::MarginalImputer$new(
   model = model_fit,
   features_table = model_data,
@@ -80,14 +95,22 @@ marginal_imputer <- mch.ml::MarginalImputer$new(
   default_features = age_group_fields,
   loss_fun = mch.ml::get_loss_function('L2')
 )
-# marginal_imputer$get_loss(marginal_imputer$features)
 
-# Sample permutations
+# Create permutation sampler object
 model_sampler <- mch.ml::PermutationSampler$new(
   imputer = marginal_imputer,
   convergence_threshold = 0.1,
   verbose = TRUE
 )
+
+# Save full model loss and null model loss
+loss_types_dt <- data.table::data.table(
+  model_type = c("Full", "Null"),
+  loss = c(model_sampler$full_model_loss, model_sampler$null_model_loss)
+)
+data.table::fwrite(loss_types_dt, file = glue::glue("{out_file_base}_loss_types.csv"))
+
+# Sample permutations
 model_sampler$sample(run_all = FALSE, min_iterations = 3L)
 
 # Save feature importance results
@@ -107,13 +130,6 @@ total_improvement <- shapley_vals_dt[, sum(shapley_value)]
   [, shapley_value_norm := shapley_value / sum(shapley_value)]
   [, shapley_value := shapley_value_norm * total_improvement ]
 )
-fwrite(shapley_vals_dt, file = glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}.csv"))
-
-# Save full model loss and null model loss
-loss_types_dt <- data.table::data.table(
-  model_type = c("Full", "Null"),
-  loss = c(model_sampler$full_model_loss, model_sampler$null_model_loss)
-)
-fwrite(loss_types_dt, file = glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}_loss_types.csv"))
+data.table::fwrite(shapley_vals_dt, file = glue::glue("{out_file_base}_shapley_vals.csv"))
 
 tictoc::toc() # End model imputation
