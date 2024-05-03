@@ -42,7 +42,7 @@ update_status <- function(job_row, new_status = 'in_progress'){
 
 claim_jobs <- function(){
   open_jobs <- conn$queryTable(
-    scheduler_table,
+    glue::glue("{scheduler_schema}.{scheduler_table}"),
     criteria = list(run_version = run_version, status = 'not_started')
   )
   if(nrow(open_jobs >= 1)){
@@ -85,7 +85,7 @@ while(!is.null(claimed_job)){
     "--survey {job_meta$survey} --method {job_meta$method}"
   ))
   # Update job exit status
-  if(job_finish_code == 0L)
+  if(job_finish_code == 0L){
     update_status(claimed_job, new_status = 'finished')
   } else {
     update_status(claimed_job, new_status = 'errored')
