@@ -78,7 +78,10 @@ MarginalImputer <- R6::R6Class(
       subset_data <- copy(self$features_table)
       for(marg in marginal_features) subset_data[[marg]] <- mean(subset_data[[marg]])
       # Return predictions based on the subset data
-      return(predict(self$model, newdata = subset_data, type = "prob")[, as.character(1)])
+      predictions <- suppressWarnings(
+        predict(self$model, newdata = subset_data, type = "prob")[, as.character(1)]
+      )
+      return(predictions)
     },
 
     #' @description Get total model loss for a subset of features

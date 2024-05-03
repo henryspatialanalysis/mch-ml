@@ -79,10 +79,10 @@ model_fit <- do.call(what = caret::train, args = model_terms_list)
 
 # Save out full model predictions
 model_data[[outcome_field]] <- as.numeric(as.character(model_data[[outcome_field]]))
-full_model_predictions <- data.table::data.table(
+full_model_predictions <- suppressWarnings(data.table::data.table(
   predicted = predict(model_fit, newdata = model_data, type = 'prob')[, as.character(1)],
   observed = model_data[[outcome_field]]
-)
+))
 data.table::fwrite(full_model_predictions, file = glue::glue("{out_file_base}_predictions.csv"))
 
 ## Run shapley decomposition ------------------------------------------------------------>
