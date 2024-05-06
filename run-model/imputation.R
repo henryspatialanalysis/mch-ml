@@ -71,5 +71,5 @@ for(survey_id in survey_ids){
     )
   }
   # Clean up
-  rm(c('prepared_data', 'age_groups_dt', 'imputed_list', 'imputed_data')); gc()
+  rm(list = c('prepared_data', 'age_groups_dt', 'imputed_list', 'imputed_data')); gc()
 }
