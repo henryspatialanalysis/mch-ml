@@ -7,18 +7,23 @@
 library(data.table); library(ggplot2)
 
 working_dir <- '~/temp_data/usaid-mch-ml'
-dataset <- 'GH2022DHS'
+dataset <- 'SN2019DHS'
+country_name <- "Senegal"
 prepared_data_version <- '20240312'
-results_version <- '20240502'
+results_version <- '20240505'
+
 
 ## Load all results from this model version --------------------------------------------->
 
 model_dir <- file.path(working_dir, 'model_results', results_version)
+viz_dir <- file.path(working_dir, 'viz', results_version)
+if(!dir.exists(viz_dir)) dir.create(viz_dir)
+
 fns <- list.files(model_dir)
 fns <- fns[which(startsWith(fns, dataset))]
 
 # Create a table of normalized shapley values by model type and imputation
-fns_shapley <- fns[!grepl("loss", fns)]
+fns_shapley <- grep('shapley', fns, value = T)
 shapley_data <- lapply(file.path(model_dir, fns_shapley), data.table::fread) |> 
   data.table::rbindlist()
 model_types <- shapley_data[, sort(unique(method))]
@@ -62,6 +67,12 @@ feature_meta <- data.table::fread(file.path(working_dir, 'model_results/feature_
 feature_styling <- data.table::fread(file.path(working_dir, 'model_results/feature_styling.csv'))
 shapley_meta <- merge(x = shapley_averages, y = feature_meta, by = 'feature', all.x = TRUE)
 
+# Check for missing feature metadata
+missing_features <- setdiff(shapley_averages$feature, feature_meta$feature)
+if(length(missing_features) > 0){
+  stop("Missing feature metadata for: ", paste(missing_features, collapse = ", "))
+}
+
 # Get relative importance of themes
 theme_sort <- (shapley_meta
   [, .(importance = sum(shapley_value)), by = theme ]
@@ -95,6 +106,8 @@ shapley_meta$method <- factor(shapley_meta$method, levels = improvement_average$
 color_palette <- feature_meta$color
 names(color_palette) <- feature_meta$feature_label
 
+if(dataset == 'SN2019DHS') shapley_meta <- shapley_meta[method != 'LogitBoost', ]
+
 
 ## Create figure ------------------------------------------------------------------------>
 
@@ -104,7 +117,7 @@ shapley_fig <- ggplot(data = shapley_meta) +
     position = 'stack', stat = 'identity'
   ) + 
   labs(
-    title = 'Shapley decomposition: Ghana',
+    title = paste('Shapley decomposition:', country_name),
     x = 'Model',
     y = "Shapley absolute feature importance",
     fill = "Feature"
@@ -114,9 +127,13 @@ shapley_fig <- ggplot(data = shapley_meta) +
   guides(fill=guide_legend(ncol=2)) +
   theme_bw()
 
-pdf(
-  glue::glue("{working_dir}/model_results/{results_version}/shapley_graph_{dataset}.pdf"),
-  height = 8, width = 12
-)
+pdf(glue::glue("{viz_dir}/shapley_graph_{dataset}.pdf"), height = 8, width = 12)
 print(shapley_fig)
 dev.off()
+
+png(
+  glue::glue("{viz_dir}/shapley_graph_{dataset}.png"),
+  height = 7.5, width = 13, units = 'in', res = 300)
+print(shapley_fig)
+dev.off()
+message("Perfect model performance = ", round(baseline_loss_by_age))
