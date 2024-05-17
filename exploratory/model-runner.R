@@ -31,12 +31,10 @@ conn <- wtm.ingest::PostGISConnection$new(default_schema = scheduler_schema)
 
 ## Helper functions --------------------------------------------------------------------->
 
-update_status <- function(job_row, new_status = 'in_progress'){
-  job_meta <- as.list(job_row)
+update_status <- function(runner_id, new_status = 'in_progress'){
   conn$dbExecute(glue::glue(
-    "UPDATE {scheduler_schema}.{scheduler_table} SET status = '{new_status}'
-    WHERE method = '{job_meta$method}' AND imputation = {job_meta$imputation}
-      AND survey = '{job_meta$survey}' AND run_version = '{job_meta$run_version}';"
+    "UPDATE {scheduler_schema}.{scheduler_table} SET status = '{new_status}' 
+      WHERE runner_id = {runner_id};"
   ))
 }
 
@@ -47,7 +45,7 @@ claim_jobs <- function(){
   )
   if(nrow(open_jobs >= 1)){
     claimed_job <- open_jobs[1, ]
-    update_status(claimed_job)
+    update_status(claimed_job$runner_id)
     return(claimed_job)    
   } else {
     return(NULL)
@@ -82,13 +80,13 @@ while(!is.null(claimed_job)){
   job_meta <- as.list(claimed_job)
   job_finish_code <- run_cmd(glue::glue(
     "Rscript {mch_repo}/run-model/shapley-decomposition.R --imp {job_meta$imputation} ",
-    "--survey {job_meta$survey} --method {job_meta$method}"
+    "--survey {job_meta$survey} --method {job_meta$method} --holdout {job_meta$holdout}"
   ))
   # Update job exit status
   if(job_finish_code == 0L){
-    update_status(claimed_job, new_status = 'finished')
+    update_status(job_meta$runner_id, new_status = 'finished')
   } else {
-    update_status(claimed_job, new_status = 'errored')
+    update_status(job_meta$runner_id, new_status = 'errored')
   }
   # Claim the next job
   claimed_job <- claim_jobs()
