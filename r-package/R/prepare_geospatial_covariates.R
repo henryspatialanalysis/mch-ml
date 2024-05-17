@@ -6,6 +6,8 @@
 #' @param measure_years All years needed for this analysis.
 #' @param id_col Cluster ID as listed in the covariates table
 #' @param drop_cols Columns that are not either covariates or the cluster ID
+#' @param keep_covariates (`character(N)`, default NULL) Which covariates should be kept
+#'   in the final dataset? If NULL, the default, keep all available covariates
 #' 
 #' @return Data.table reshaped long by year, with missing years filled
 #' 
@@ -15,7 +17,8 @@ reshape_dhs_covariates <- function(
   covs_table,
   measure_years,
   id_col = 'DHSCLUST',
-  drop_cols = c('DHSID','GPS_Dataset','DHSCC','DHSYEAR','SurveyID')
+  drop_cols = c('DHSID','GPS_Dataset','DHSCC','DHSYEAR','SurveyID'),
+  keep_covariates = NULL
 ){
   # Set some empty variables to pass R checks
   variable <- id <- value <- i.value <- val_p <- val_n <- runlength <- missings <- NULL
@@ -23,7 +26,6 @@ reshape_dhs_covariates <- function(
   # Drop unnecessary columns, then melt
   covs_table <- covs_table[, setdiff(colnames(covs_table), drop_cols), with = F]
   covs_long <- melt(covs_table, id.vars = id_col, variable.factor = F) |> suppressWarnings()
-  # For 
   tv_covs <- (covs_long
     [grepl('_20', variable), ]
     [, year := as.integer(substr(variable, nchar(variable) - 3, nchar(variable))) ]
@@ -31,6 +33,13 @@ reshape_dhs_covariates <- function(
     [, id := get(id_col) ]
   )
   year_range <- range(c(tv_covs$year, measure_years))
+
+  # Subset only to kept covariates
+  if(!is.null(keep_covariates)){
+    tv_covs <- copy(tv_covs[variable %in% keep_covariates, ])
+    covs_long <- copy(covs_long[variable %in% keep_covariates, ])
+  }
+  
   template_dt <- data.table::CJ(
     variable = sort(unique(tv_covs$variable)),
     id = covs_table[[id_col]],
@@ -59,6 +68,7 @@ reshape_dhs_covariates <- function(
     y = covs_table[, c(id_col, non_tv_covs), with = F],
     by = id_col
   )
+
   # Return reshaped and filled covariate table
   return(covs_wide)
 }
