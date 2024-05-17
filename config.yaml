@@ -1,26 +1,18 @@
-countries: ["Congo Democratic Republic", "Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria", "Philippines"]
-survey_ids: ["CD2013DHS", "CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2022DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
-completeness_threshold: 0.5
+countries: ["Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria", "Philippines"]
+survey_ids: ["CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
+completeness_threshold: 0.3
+n_holdouts: 5
 n_imputations: 5
 fields:
   ids: ['cluster', 'bh_year', 'hh_id', 'w_id', 'birth_id', 'admin1_code', 'admin1_name']
   outcome: 'died'
   hidden: [
     'age_group', 'c_birth_year', 'c_alive', 'c_age_months', 'c_died_pnn', 'b_10y_prior',
-    'w_sample_weight', 'int_month_cmc', 'c_died_age_months',
-    'c_birth_int', 's_stunt_modsev', 's_stunt_sev', 's_waste_modsev', 's_waste_sev',
-    's_underweight_modsev', 's_underweight_sev', 's_stunt_modsev_roll3yr',
-    's_stunt_sev_roll3yr', 's_waste_modsev_roll3yr', 's_waste_sev_roll3yr',
-    's_underweight_modsev_roll3yr', 's_underweight_sev_roll3yr', 'Diurnal_Temperature_Range',
-    'Day_Land_Surface_Temp', 'U5_Population', 'All_Population_Count', 'UN_Population_Count',
-    'UN_Population_Density', 'Livestock_Chickens', 'Livestock_Goats', 'Livestock_Sheep',
-    'Temperature_January', 'Temperature_February', 'Temperature_March', 'Temperature_April',
-    'Temperature_May', 'Temperature_June', 'Temperature_July', 'Temperature_August',
-    'Temperature_September', 'Temperature_October', 'Temperature_November',
-    'Temperature_December', 'Travel_Times', 'Rainfall', 'Malaria_Prevalence',
-    "Mean_Temperature", 'Maximum_Temperature', 'Minimum_Temperature',
-    "Night_Land_Surface_Temp", "acled_deaths_10km", "acled_deaths_25km", "acled_deaths_100km",
-    "w_born_cmc"
+    'w_sample_weight', 'int_month_cmc', 'c_died_age_months', 'c_birth_int', "w_born_cmc"
+  ]
+  spatial_covariates: [
+    'Drought_Episodes', 'Elevation', 'Global_Human_Footprint', 'Land_Surface_Temperature',
+    'Livestock_Cattle', 'Malaria_Incidence', 'Nightlights_Composite', 'Precipitation'
   ]
 age_groups:
   a01mo: [1, 6]
@@ -30,9 +22,9 @@ age_groups:
   a36mo: [36, 48]
   a48mo: [48, 60]
 versions:
-  prepared_data: '20240312'
-  imputed_data: '20240417'
-  model_results: '20240417'
+  prepared_data: '20240516'
+  imputed_data: '20240516'
+  model_results: '20240516'
 directories:
   r_package:
     versioned: FALSE
@@ -41,7 +33,7 @@ directories:
     versioned: FALSE
     path: '~/temp_data/usaid-mch-ml/metadata'
     files:
-      codebook: 'codebook_20240215.csv'
+      codebook: 'codebook_20240516.csv'
   prepared_data:
     versioned: TRUE
     path: '~/temp_data/usaid-mch-ml/prepared_data'
