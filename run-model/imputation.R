@@ -49,7 +49,7 @@ for(survey_id in survey_ids){
   message("Dropping fields with a single value: ", paste(one_val_cols, collapse=', '), "\n")
   prepared_data[, (one_val_cols) := NULL ]
 
-  do_not_impute_fields <- config$get("fields") |> unlist()
+  do_not_impute_fields <- config$get('fields')[c('ids', 'outcome', 'hidden')] |> unlist()
   subset <- copy(prepared_data)[, (do_not_impute_fields) := NULL ]
 
   # Impute missing values
