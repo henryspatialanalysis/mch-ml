@@ -18,12 +18,16 @@ parser <- argparse::ArgumentParser()
 parser$add_argument('--imp', type = 'integer')
 parser$add_argument('--method', type = 'character')
 parser$add_argument('--survey', type = 'character')
+parser$add_argument('--holdout', default = 0, type = 'integer')
 args <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 imp_ii <- args$imp # Imputation version
 METHOD <- args$method # 'plr', 'xgbTree', 'treebag', 'rf', 'LogitBoost', 'gam', 'glm', 'ada'
 survey_id <- args$survey # e.g. 'GH2022DHS'
+holdout_id <- args$holdout
 
-if(is.null(imp_ii) | is.null(METHOD) | is.null(survey_id)) stop("Issue with command line arguments.")
+if(is.null(holdout_id) | is.null(imp_ii) | is.null(METHOD) | is.null(survey_id)){
+  stop("Issue with command line arguments.")
+}
 
 # Load packages
 load_libs <- c('versioning', 'data.table', 'caret', 'glue')
@@ -35,20 +39,24 @@ config <- versioning::Config$new(CONFIG_FP)
 
 results_dir <- config$get_dir_path('model_results')
 if(!dir.exists(results_dir)) stop("Results directory does not exist")
-out_file_base <- glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}")
+out_file_base <- glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}_h{holdout_id}")
 
 ## Fit model
 
 tictoc::tic(paste("Imputation", imp_ii))
 
-# Load imputed data and prepare features
+# Load imputed data
 model_data <- glue::glue('{config$get_dir_path("imputed_data")}/{survey_id}_imp{imp_ii}.csv') |>
   versioning::autoread()
+
+# Skip processing for reserved (special) fields and fields with any NAs
 age_group_fields <- grep('age_groupa', colnames(model_data), value = T)
-feature_fields <- setdiff(
-  colnames(model_data),
-  c(unlist(config$get('fields')), age_group_fields)
+special_fields <- c(
+  age_group_fields,
+  config$get('fields')[c('ids', 'outcome', 'hidden')] |> unlist(),
+  'holdout'
 )
+feature_fields <- setdiff(colnames(model_data), special_fields)
 # Drop any fields with missing values
 for(ff in feature_fields){
   # Normalize
@@ -60,9 +68,20 @@ message(glue::glue(
   "Running model with {length(age_group_fields)} age groups and ",
   "{length(feature_fields)} features."
 ))
+
+# Determine test and train data based on the holdout
+if(holdout_id == 0L){
+  train_data <- copy(model_data)
+  test_data <- copy(model_data)
+} else {
+  train_data <- copy(model_data[holdout != holdout_id, ])
+  test_data <- copy(model_data[holdout == holdout_id, ])
+}
+rm(model_data)
+
 # Outcome field should be a factor
 outcome_field <- config$get('fields', 'outcome')
-model_data[[outcome_field]] <- factor(model_data[[outcome_field]])
+train_data[[outcome_field]] <- factor(train_data[[outcome_field]])
 
 # Fit full model
 model_terms_list <- list(
@@ -70,28 +89,31 @@ model_terms_list <- list(
     "{outcome_field} ~ ",
     "{paste(c(age_group_fields, feature_fields), collapse = ' + ')}"
   ) |> as.formula(),
-  data = model_data,
+  data = train_data,
   method = METHOD,
   trControl = caret::trainControl(method = 'cv', number = 5)
 )
 if(METHOD == 'glm') model_terms_list$family <- 'binomial'
 model_fit <- do.call(what = caret::train, args = model_terms_list)
 
-# Save out full model predictions
-model_data[[outcome_field]] <- as.numeric(as.character(model_data[[outcome_field]]))
+# Save out test model predictions
 full_model_predictions <- suppressWarnings(data.table::data.table(
-  predicted = predict(model_fit, newdata = model_data, type = 'prob')[, as.character(1)],
-  observed = model_data[[outcome_field]]
+  predicted = predict(model_fit, newdata = test_data, type = 'prob')[, as.character(1)],
+  observed = test_data[[outcome_field]]
 ))
 data.table::fwrite(full_model_predictions, file = glue::glue("{out_file_base}_predictions.csv"))
+
+# We don't need to run the Shapley decomposition on the holdouts
+if(holdout_id != 0L) quit(save = 'no', status = 0)
+
 
 ## Run shapley decomposition ------------------------------------------------------------>
 
 # Create marginal imputer
 marginal_imputer <- mch.ml::MarginalImputer$new(
   model = model_fit,
-  features_table = model_data,
-  outcomes = model_data[[outcome_field]],
+  features_table = test_data,
+  outcomes = test_data[[outcome_field]],
   default_features = age_group_fields,
   loss_fun = mch.ml::get_loss_function('L2')
 )
@@ -99,7 +121,7 @@ marginal_imputer <- mch.ml::MarginalImputer$new(
 # Create permutation sampler object
 model_sampler <- mch.ml::PermutationSampler$new(
   imputer = marginal_imputer,
-  convergence_threshold = 0.12,
+  convergence_threshold = 0.125,
   verbose = TRUE
 )
 
