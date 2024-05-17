@@ -70,8 +70,6 @@ for(prepare_country in prepare_countries){
 
   # Prepare "siblings" table - average of living sibling characteristics by mother
   tictoc::tic("  -> Merging sibling characteristics")
-
-  # --> Version 1: All siblings born to the same mother
   mother_id_cols <- c('cluster','hh_id','w_id')
   sibling_cols <- grep('^s_|^p_', colnames(microdata_list$births), value = T)
   # Prepare subset births table
@@ -89,41 +87,7 @@ for(prepare_country in prepare_countries){
     by = c(mother_id_cols),
     all.x = TRUE
   )
-
-  # --> Version 2: All siblings born to the same mother *in a 3-year rolling time window*
-  sibling_window_size_years <- 3
-  max_birth_year <- ceiling(max(analysis_table$c_birth_year, na.rm = T))
-  sib_window_range <- seq(max_birth_year - 6 - sibling_window_size_years, max_birth_year)
-  sibling_rolling_window <- (
-    data.table::CJ(c_birth_year = sib_window_range, s_birth_year = sib_window_range)
-    [abs(c_birth_year - s_birth_year) <= sibling_window_size_years, ]
-  )
-  rolling_sibling_characteristics <- (
-    microdata_list$births
-      [, c(mother_id_cols, sibling_cols, 'c_birth_year'), with = F]
-      [, s_birth_year := c_birth_year ]
-      [, c_birth_year := NULL ]
-      [sibling_rolling_window, on = 's_birth_year', allow.cartesian = TRUE]
-      [, c(mother_id_cols, sibling_cols, 'c_birth_year'), with = F]
-      [, lapply(.SD, mean, na.rm = T), by = c(mother_id_cols, 'c_birth_year')]
-  )
-  setnames(rolling_sibling_characteristics, sibling_cols, paste0(sibling_cols, '_roll3yr'))
-  # Merge on the rolling sibling characteristics
-  analysis_table <- merge(
-    x = analysis_table,
-    y = rolling_sibling_characteristics,
-    by = c(mother_id_cols, 'c_birth_year'),
-    all.x = TRUE
-  )
   tictoc::toc() # End merging sibling characteristics
-
-  # Split birth histories by age group
-  analysis_table <- mch.ml::split_ages(
-    data = analysis_table,
-    age_groups = config$get('age_groups'),
-    max_timediff_months = 10 * 12, # 10 year gap
-    child_id_columns = c('cluster', 'hh_id', 'w_id', 'birth_id')
-  )
 
   # Merge on cluster metadata
   cluster_metadata <- as.data.table(microdata_list$geographic.data)[, .(
@@ -132,6 +96,14 @@ for(prepare_country in prepare_countries){
   )]
   analysis_table <- merge(
     x = analysis_table, y = cluster_metadata, by = 'cluster', all.x = TRUE
+  )
+
+  # Split birth histories by age group
+  analysis_table <- mch.ml::split_ages(
+    data = analysis_table,
+    age_groups = config$get('age_groups'),
+    max_timediff_months = 10 * 12, # 10 year gap
+    child_id_columns = c('cluster', 'hh_id', 'w_id', 'birth_id')
   )
 
   # Load country conflict data
@@ -144,7 +116,7 @@ for(prepare_country in prepare_countries){
   conflict_deaths_spatial <- acled_country_conflict_data[fatalities > 0, ] |>
     sf::st_as_sf(coords = c('longitude', 'latitude'), crs = sf::st_crs('EPSG:4326'))
   # Sum conflict deaths within 10, 25, and 50km by year of birth
-  for(buffer_radius_km in c(10, 25, 50, 100)){
+  for(buffer_radius_km in c(25)){
     buffered_points <- sf::st_buffer(
       microdata_list$geographic.data[, c('DHSCLUST')],
       dist = units::set_units(buffer_radius_km, 'km')
@@ -173,7 +145,8 @@ for(prepare_country in prepare_countries){
   reshaped_covariates <- mch.ml::reshape_dhs_covariates(
     covs_table = microdata_list$geospatial.covariates,
     measure_years = analysis_years,
-    id_col = 'DHSCLUST'
+    id_col = 'DHSCLUST',
+    keep_covariates = config$get('fields', 'spatial_covariates')
   )
   analysis_table <- merge(
     x = analysis_table,
@@ -183,10 +156,17 @@ for(prepare_country in prepare_countries){
   )
   tictoc::toc() # End geospatial covariate prep
 
+  # Finally, add holdout IDs
+  analysis_table$holdout_id <- config$get('n_holdouts') |>
+    seq_len() |> 
+    rep_len(length.out = nrow(analysis_table)) |>
+    sample()
+
   # Save prepared country data to file
   versioning::autowrite(
     analysis_table,
     glue::glue("{config$get_dir_path('prepared_data')}/analysis_dataset_{survey_id}.csv")
   )
+  # Finished - data preparation
   tictoc::toc() # End country data prep
 }
