@@ -23,9 +23,9 @@ args <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 imp_ii <- args$imp # Imputation version
 METHOD <- args$method # 'plr', 'xgbTree', 'treebag', 'rf', 'LogitBoost', 'gam', 'glm', 'ada'
 survey_id <- args$survey # e.g. 'GH2022DHS'
-holdout_id <- args$holdout
+holdout <- args$holdout
 
-if(is.null(holdout_id) | is.null(imp_ii) | is.null(METHOD) | is.null(survey_id)){
+if(is.null(holdout) | is.null(imp_ii) | is.null(METHOD) | is.null(survey_id)){
   stop("Issue with command line arguments.")
 }
 
@@ -39,7 +39,7 @@ config <- versioning::Config$new(CONFIG_FP)
 
 results_dir <- config$get_dir_path('model_results')
 if(!dir.exists(results_dir)) stop("Results directory does not exist")
-out_file_base <- glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}_h{holdout_id}")
+out_file_base <- glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}_h{holdout}")
 
 ## Fit model
 
@@ -54,7 +54,7 @@ age_group_fields <- grep('age_groupa', colnames(model_data), value = T)
 special_fields <- c(
   age_group_fields,
   config$get('fields')[c('ids', 'outcome', 'hidden')] |> unlist(),
-  'holdout'
+  'holdout_id'
 )
 feature_fields <- setdiff(colnames(model_data), special_fields)
 # Drop any fields with missing values
@@ -70,12 +70,12 @@ message(glue::glue(
 ))
 
 # Determine test and train data based on the holdout
-if(holdout_id == 0L){
+if(holdout == 0L){
   train_data <- copy(model_data)
   test_data <- copy(model_data)
 } else {
-  train_data <- copy(model_data[holdout != holdout_id, ])
-  test_data <- copy(model_data[holdout == holdout_id, ])
+  train_data <- copy(model_data[holdout_id != holdout, ])
+  test_data <- copy(model_data[holdout_id == holdout, ])
 }
 rm(model_data)
 
@@ -104,7 +104,7 @@ full_model_predictions <- suppressWarnings(data.table::data.table(
 data.table::fwrite(full_model_predictions, file = glue::glue("{out_file_base}_predictions.csv"))
 
 # We don't need to run the Shapley decomposition on the holdouts
-if(holdout_id != 0L) quit(save = 'no', status = 0)
+if(holdout != 0L) quit(save = 'no', status = 0)
 
 
 ## Run shapley decomposition ------------------------------------------------------------>
