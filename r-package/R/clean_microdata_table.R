@@ -52,9 +52,8 @@ clean_microdata_using_codebook <- function(microdata, codebook){
   (original_var <- rename <- include <- c_died_pnn <- c_alive <- c_died_age_months <-
     c_age_months <- c_maternal_age <- c_birth_cmc <- w_born_cmc <- c_birth_year <- 
     int_month_cmc <- c_lbw <- p_birth_weight <- water_time <- p_sba <- p_anc1 <- p_anc4 <-
-    p_anc8 <- p_anc_times <- s_stunt_modsev <- s_stunt_sev <- s_waste_modsev <- 
-    s_waste_sev <- s_underweight_modsev <- s_underweight_sev <- s_haz_stdev <- 
-    s_whz_stdev <- s_waz_stdev <- b_10y_prior <- NULL
+    p_anc8 <- p_anc_times <- s_haz_stdev <- s_whz_stdev <- s_waz_stdev <- b_10y_prior <- 
+    w_empowered_sdg <- NULL
   )
 
   # Confirm that required fields are available
@@ -144,6 +143,13 @@ clean_microdata_using_codebook <- function(microdata, codebook){
     m_clean[water_time == 996L, water_time := 0L ]
   }
 
+  # Construct women's empowerment SDG indicator
+  sdg_cols <- intersect(c('w_decision_contra', 'w_decision_hc', 'w_beating_sex'), prepared_cols)
+  if(length(sdg_cols) == 3L){
+    m_clean[, w_empowered_sdg := w_decision_contra * w_decision_hc * (1 - w_beating_sex)]
+  }
+  for(sdg_col in sdg_cols) m_clean[, (sdg_col) := NULL ]
+
   # Construct skilled ANC and skilled birth attendance indicators
   skilled_attendants <- c('doctor','nurse','midwife','chw','aux_midwife')
   sba_cols <- paste0('p_sba_', skilled_attendants)
@@ -164,23 +170,6 @@ clean_microdata_using_codebook <- function(microdata, codebook){
     m_clean[, p_anc8 := as.integer(p_anc_times >= 8L) ]
     # Drop the original column
     m_clean[, p_anc_times := NULL ]
-  }
-
-  # Convert sibling z-scores to moderate and severe stunting, wasting, and underweight
-  if('s_haz_stdev' %in% prepared_cols){
-    # Moderate to severe: < -200
-    m_clean[, s_stunt_modsev := as.integer(s_haz_stdev) < -200 ]
-    m_clean[, s_stunt_sev := as.integer(s_haz_stdev) < -300 ]
-  }
-  if('s_waz_stdev' %in% prepared_cols){
-    # Moderate to severe: < -200
-    m_clean[, s_underweight_modsev := as.integer(s_waz_stdev) < -200 ]
-    m_clean[, s_underweight_sev := as.integer(s_waz_stdev) < -300 ]
-  }
-  if('s_whz_stdev' %in% prepared_cols){
-    # Moderate to severe: < -200
-    m_clean[, s_waste_modsev := as.integer(s_whz_stdev) < -200 ]
-    m_clean[, s_waste_sev := as.integer(s_whz_stdev) < -300 ]
   }
 
   # Return cleaned table
