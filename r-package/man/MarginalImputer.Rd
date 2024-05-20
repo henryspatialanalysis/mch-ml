@@ -60,6 +60,7 @@ Create a new MarginalImputer object
 \if{html}{\out{<div class="r">}}\preformatted{MarginalImputer$new(
   model,
   features_table,
+  feature_fields,
   outcomes,
   loss_fun,
   prediction_fun = stats::predict,
@@ -75,6 +76,9 @@ the \code{predict()} function.}
 
 \item{\code{features_table}}{(\code{data.frame}) Table with columns corresponding to features
 in the \code{model}}
+
+\item{\code{feature_fields}}{(\code{character(N)}) Fields used in model prediction. Does not
+include the \code{default_features} that are included in the base model.}
 
 \item{\code{outcomes}}{(\code{numeric(nrow(features_table))}) Vector of outcomes corresponding
 to each row of \code{features_table}}

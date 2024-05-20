@@ -37,6 +37,8 @@ MarginalImputer <- R6::R6Class(
     #'   the `predict()` function.
     #' @param features_table (`data.frame`) Table with columns corresponding to features
     #'   in the `model`
+    #' @param feature_fields (`character(N)`) Fields used in model prediction. Does not
+    #'   include the `default_features` that are included in the base model.
     #' @param outcomes (`numeric(nrow(features_table))`) Vector of outcomes corresponding
     #'   to each row of `features_table`
     #' @param loss_fun (function) Loss function taking two numeric vectors of equal
@@ -48,14 +50,14 @@ MarginalImputer <- R6::R6Class(
     #'   be included in every model permutation by default. Not listed in self$features
     #'   because they cannot be toggled
     initialize = function(
-      model, features_table, outcomes, loss_fun, prediction_fun = stats::predict,
-      default_features = NULL
+      model, features_table, feature_fields, outcomes, loss_fun,
+      prediction_fun = stats::predict, default_features = NULL
     ){
       # Add as fields
       self$model <- model
       self$features_table <- features_table
       self$default_features <- default_features
-      self$features <- model$terms |> attr('term.labels') |> setdiff(default_features)
+      self$features <- feature_fields
       if(is.null(self$features)) stop("Issue with model - no features found")
       missing_features <- setdiff(
         c(self$features, self$default_features),
