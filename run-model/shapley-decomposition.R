@@ -8,7 +8,8 @@
 ## 
 ## #######################################################################################
 
-## Setup
+
+## SETUP -------------------------------------------------------------------------------->
 
 # Set globals
 REPO_FP <- '~/efs-mount/repos/usaid-mch-ml/r-package'
@@ -41,9 +42,10 @@ results_dir <- config$get_dir_path('model_results')
 if(!dir.exists(results_dir)) stop("Results directory does not exist")
 out_file_base <- glue::glue("{results_dir}/{survey_id}_{METHOD}_{imp_ii}_h{holdout}")
 
-## Fit model
-
 tictoc::tic(paste("Imputation", imp_ii))
+
+
+## DATA PREPARATION --------------------------------------------------------------------->
 
 # Load imputed data
 model_data <- glue::glue('{config$get_dir_path("imputed_data")}/{survey_id}_imp{imp_ii}.csv') |>
@@ -79,26 +81,94 @@ if(holdout == 0L){
 }
 rm(model_data)
 
-# Outcome field should be a factor
-outcome_field <- config$get('fields', 'outcome')
-train_data[[outcome_field]] <- factor(train_data[[outcome_field]])
+# Special data preparation for random survival forests, not fit in `caret`
+if(METHOD == 'rsf'){
+  train_data <- train_data[
+    , c(lapply(.SD, mean), .(died = max(died), age_group = max(age_group))),
+    .SDcols = feature_fields, by = setdiff(config$get('fields', 'ids'), 'bh_year')
+  ]
+  # Merge on the estimated age at death, with an exception for the oldest age group
+  age_group_merge_table <- data.table::data.table(
+    age_group = c('a01mo', 'a06mo', 'a12mo', 'a24mo', 'a36mo', 'a48mo'),
+    ttodead = c(2.5, 8, 17, 29, 41, 53),
+    age_group_idx = 1:6
+  )
+  train_data[age_group_merge_table, ttodead := i.ttodead, on = 'age_group']
+  train_data[(died == 0L) & age_group == 'a48mo', ttodead := 59 ]
+  # Add age group index to the original data for prediction purposes
+  test_data[age_group_merge_table, age_group_idx := i.age_group_idx, on = 'age_group']
+}
 
-# Fit full model
-model_terms_list <- list(
-  form = glue::glue(
-    "{outcome_field} ~ ",
-    "{paste(c(age_group_fields, feature_fields), collapse = ' + ')}"
-  ) |> as.formula(),
-  data = train_data,
-  method = METHOD,
-  trControl = caret::trainControl(method = 'cv', number = 5)
-)
-if(METHOD == 'glm') model_terms_list$family <- 'binomial'
-model_fit <- do.call(what = caret::train, args = model_terms_list)
+outcome_field <- config$get('fields', 'outcome')
+
+
+## FIT MODEL ---------------------------------------------------------------------------->
+
+
+# Different model fit and prediction functions for random survival forests vs. caret
+if(METHOD == 'rsf'){
+  # CASE: Random survival forests
+  # Fit full model
+  model_fit <- randomForestSRC::rfsrc.fast(
+    formula = 'Surv(ttodead, {outcome_field}) ~ {paste(feature_fields, collapse = "+")}' |>
+      glue::glue() |> stats::as.formula(),
+    data = train_data,
+    ntree = 1000,
+    nodesize = 5,
+    nsplit = 50,
+    ntime = c(5, 11, 23, 35, 47, 59),
+    importance = FALSE,
+    forest = TRUE
+  )
+
+  # Set prediction function
+  prediction_fun <- function(object, newdata){
+    cov_matrix <- as.data.frame(newdata[, ..feature_fields])
+    # Get nPx - probability of surviving to next age group = 1 - nQx
+    npx_matrix <- randomForestSRC::predict.rfsrc(
+      object = object, newdata = cov_matrix, proximity = F, distance = F, forest.wt = F,
+      outcome ='train'
+    )$survival
+    # In all age bins except the first, survival probabilities are conditional on
+    #  surviving the previous age bin
+    age_bins <- seq_len(ncol(npx_matrix))
+    for(ii in rev(age_bins[-1])){
+      npx_matrix[, ii] <- npx_matrix[, ii] / npx_matrix[, ii - 1]
+    }
+    predictions <- rep(NA_real_, times = nrow(newdata))
+    for(ii in seq_len(ncol(npx_matrix))){
+      which_in_bin <- which(newdata$age_group_idx == ii)
+      predictions[which_in_bin] <- 1 - npx_matrix[which_in_bin, ii]
+    }
+    return(predictions)
+  }
+} else {
+  # CASE: caret models
+  # Outcome field should be a factor
+  train_data[[outcome_field]] <- factor(train_data[[outcome_field]])
+
+  # Fit full model
+  model_terms_list <- list(
+    form = glue::glue(
+      "{outcome_field} ~ ",
+      "{paste(c(age_group_fields, feature_fields), collapse = ' + ')}"
+    ) |> as.formula(),
+    data = train_data,
+    method = METHOD,
+    trControl = caret::trainControl(method = 'cv', number = 5)
+  )
+  if(METHOD == 'glm') model_terms_list$family <- 'binomial'
+  model_fit <- do.call(what = caret::train, args = model_terms_list)
+
+  # Set prediction function
+  prediction_fun <- function(object, newdata){
+    stats::predict(self$model, newdata = subset_data, type = "prob")[, as.character(1)]
+  }  
+}
 
 # Save out test model predictions
 full_model_predictions <- suppressWarnings(data.table::data.table(
-  predicted = predict(model_fit, newdata = test_data, type = 'prob')[, as.character(1)],
+  predicted = prediction_fun(object = model_fit, newdata = test_data),
   observed = test_data[[outcome_field]]
 ))
 data.table::fwrite(full_model_predictions, file = glue::glue("{out_file_base}_predictions.csv"))
@@ -115,7 +185,8 @@ marginal_imputer <- mch.ml::MarginalImputer$new(
   features_table = test_data,
   outcomes = test_data[[outcome_field]],
   default_features = age_group_fields,
-  loss_fun = mch.ml::get_loss_function('L2')
+  loss_fun = mch.ml::get_loss_function('L2'),
+  prediction_fun = prediction_fun
 )
 
 # Create permutation sampler object
