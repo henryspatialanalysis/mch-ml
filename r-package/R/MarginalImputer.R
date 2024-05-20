@@ -26,6 +26,10 @@ MarginalImputer <- R6::R6Class(
     #' @field loss_fun (function) Loss function taking two numeric vectors of equal
     #'   length, outcomes and predicted outcomes, and returning the total model loss
     loss_fun = NULL,
+    #' @field prediction_fun (function) Function to create predictions based on two items,
+    #'   the model object `object` and new data `newdata`. Default is the generic
+    #' `predict` function
+    prediction_fun = NULL,
 
     #' @description Create a new MarginalImputer object
     #' 
@@ -37,10 +41,16 @@ MarginalImputer <- R6::R6Class(
     #'   to each row of `features_table`
     #' @param loss_fun (function) Loss function taking two numeric vectors of equal
     #'   length, outcomes and predicted outcomes, and returning the total model loss
+    #' @param prediction_fun (function) Function to create predictions based on two items,
+    #'   the model object `object` and new data `newdata`. Default is the generic
+    #' `predict` function.
     #' @param default_features (`character(N)`, default `NULL`) The features that will
     #'   be included in every model permutation by default. Not listed in self$features
     #'   because they cannot be toggled
-    initialize = function(model, features_table, outcomes, loss_fun, default_features = NULL){
+    initialize = function(
+      model, features_table, outcomes, loss_fun, prediction_fun = stats::predict,
+      default_features = NULL
+    ){
       # Add as fields
       self$model <- model
       self$features_table <- features_table
@@ -56,6 +66,7 @@ MarginalImputer <- R6::R6Class(
       }
       self$outcomes <- outcomes
       self$loss_fun <- loss_fun
+      self$prediction_fun <- prediction_fun
     },
 
     #' @description Fit the predictive model with a subset of features
@@ -79,7 +90,7 @@ MarginalImputer <- R6::R6Class(
       for(marg in marginal_features) subset_data[[marg]] <- mean(subset_data[[marg]])
       # Return predictions based on the subset data
       predictions <- suppressWarnings(
-        predict(self$model, newdata = subset_data, type = "prob")[, as.character(1)]
+        self$prediction_fun(object = self$model, newdata = subset_data)
       )
       return(predictions)
     },
