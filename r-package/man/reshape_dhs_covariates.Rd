@@ -8,7 +8,8 @@ reshape_dhs_covariates(
   covs_table,
   measure_years,
   id_col = "DHSCLUST",
-  drop_cols = c("DHSID", "GPS_Dataset", "DHSCC", "DHSYEAR", "SurveyID")
+  drop_cols = c("DHSID", "GPS_Dataset", "DHSCC", "DHSYEAR", "SurveyID"),
+  keep_covariates = NULL
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ reshape_dhs_covariates(
 \item{id_col}{Cluster ID as listed in the covariates table}
 
 \item{drop_cols}{Columns that are not either covariates or the cluster ID}
+
+\item{keep_covariates}{(\code{character(N)}, default NULL) Which covariates should be kept
+in the final dataset? If NULL, the default, keep all available covariates}
 }
 \value{
 Data.table reshaped long by year, with missing years filled

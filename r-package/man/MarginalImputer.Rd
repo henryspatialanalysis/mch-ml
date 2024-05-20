@@ -35,6 +35,10 @@ to each row of \code{features_table}}
 
 \item{\code{loss_fun}}{(function) Loss function taking two numeric vectors of equal
 length, outcomes and predicted outcomes, and returning the total model loss}
+
+\item{\code{prediction_fun}}{(function) Function to create predictions based on two items,
+the model object \code{object} and new data \code{newdata}. Default is the generic
+\code{predict} function}
 }
 \if{html}{\out{</div>}}
 }
@@ -58,6 +62,7 @@ Create a new MarginalImputer object
   features_table,
   outcomes,
   loss_fun,
+  prediction_fun = stats::predict,
   default_features = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -76,6 +81,10 @@ to each row of \code{features_table}}
 
 \item{\code{loss_fun}}{(function) Loss function taking two numeric vectors of equal
 length, outcomes and predicted outcomes, and returning the total model loss}
+
+\item{\code{prediction_fun}}{(function) Function to create predictions based on two items,
+the model object \code{object} and new data \code{newdata}. Default is the generic
+\code{predict} function.}
 
 \item{\code{default_features}}{(\code{character(N)}, default \code{NULL}) The features that will
 be included in every model permutation by default. Not listed in self$features
