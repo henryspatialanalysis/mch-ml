@@ -11,10 +11,12 @@
 library(data.table) |> suppressPackageStartupMessages()
 devtools::load_all('~/efs-mount/repos/wtm.ingest') |> suppressPackageStartupMessages()
 
-run_version <- '20240502'
-methods <- c('glm', 'gam', 'ada', 'plr', 'xgbTree', 'treebag', 'rf', 'LogitBoost')
+run_version <- '20240521'
+methods <- c('glm', 'gam', 'ada', 'plr', 'xgbTree', 'treebag', 'rf', 'LogitBoost', 'rsf')
 imputations <- 1:5
-surveys <- 'GH2022DHS'
+surveys <- c(
+  "CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"
+)
 
 conn <- wtm.ingest::PostGISConnection$new(default_schema = 'scheduler')
 
@@ -24,7 +26,8 @@ full_table <- data.table::CJ(
   imputation = imputations,
   survey = surveys,
   run_version = run_version,
-  status = 'not_started'
+  status = 'not_started',
+  holdout = 0:5
 )
 conn$appendTable('shapley_runner', rows = full_table )
 message("Finished preparing run version ", run_version)
