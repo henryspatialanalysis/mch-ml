@@ -31,7 +31,7 @@ if(is.null(holdout) | is.null(imp_ii) | is.null(METHOD) | is.null(survey_id)){
 }
 
 # Load packages
-load_libs <- c('versioning', 'data.table', 'caret', 'glue')
+load_libs <- c('versioning', 'data.table', 'caret', 'glue', 'randomForestSRC')
 lapply(load_libs, library, character.only = T) |> invisible()
 devtools::load_all(REPO_FP)
 
