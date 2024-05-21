@@ -83,18 +83,18 @@ rm(model_data)
 
 # Special data preparation for random survival forests, not fit in `caret`
 if(METHOD == 'rsf'){
+  collapse_fields <- setdiff(config$get('fields', 'ids'), 'bh_year')
   train_data <- train_data[
-    , c(lapply(.SD, mean), .(died = max(died), age_group = max(age_group))),
-    .SDcols = feature_fields, by = setdiff(config$get('fields', 'ids'), 'bh_year')
+    , c(lapply(.SD, mean), died = max(died), age_group = max(age_group)),
+    .SDcols = feature_fields, by = collapse_fields
   ]
-  # Merge on the estimated age at death, with an exception for the oldest age group
+  # Merge on the age group at death, with an exception for the oldest age group
   age_group_merge_table <- data.table::data.table(
     age_group = c('a01mo', 'a06mo', 'a12mo', 'a24mo', 'a36mo', 'a48mo'),
-    ttodead = c(2.5, 8, 17, 29, 41, 53),
+    ttodead = 1:6,
     age_group_idx = 1:6
   )
   train_data[age_group_merge_table, ttodead := i.ttodead, on = 'age_group']
-  train_data[(died == 0L) & age_group == 'a48mo', ttodead := 59 ]
   # Add age group index to the original data for prediction purposes
   test_data[age_group_merge_table, age_group_idx := i.age_group_idx, on = 'age_group']
 }
@@ -104,43 +104,65 @@ outcome_field <- config$get('fields', 'outcome')
 
 ## FIT MODEL ---------------------------------------------------------------------------->
 
-
 # Different model fit and prediction functions for random survival forests vs. caret
 if(METHOD == 'rsf'){
   # CASE: Random survival forests
   # Fit full model
-  model_fit <- randomForestSRC::rfsrc.fast(
-    formula = 'Surv(ttodead, {outcome_field}) ~ {paste(feature_fields, collapse = "+")}' |>
-      glue::glue() |> stats::as.formula(),
-    data = train_data,
-    ntree = 1000,
-    nodesize = 5,
-    nsplit = 50,
-    ntime = c(5, 11, 23, 35, 47, 59),
-    importance = FALSE,
-    forest = TRUE
+  tictoc::tic('Parameter tuning')
+  rsf_formula <- stats::as.formula(glue::glue("Surv(ttodead, {outcome_field}) ~ ."))
+  best_params <- randomForestSRC::tune.rfsrc(
+    formula = rsf_formula,
+    data = as.data.frame(train_data)[, c('ttodead', outcome_field, feature_fields)],
+    nodesizeTry = seq(6, 20, by = 2),
+    ntree = 500L,
+    ntime = NULL,
+    doBest = FALSE,
+    trace = FALSE
   )
+  tictoc::toc()
+  model_fit <- randomForestSRC::rfsrc(
+    formula = rsf_formula,
+    data = as.data.frame(train_data)[, c('ttodead', outcome_field, feature_fields)],
+    mtry = best_params$optimal['mtry'],
+    nodesize = best_params$optimal['nodesize'],
+    ntree = 500L,
+    ntime = NULL,
+    importance = (holdout == 0L)
+  )
+
+  # Save out RSF-specific feature importance
+  if(!is.null(model_fit$importance)){
+    importance_table <- data.table::data.table(
+      feature = names(model_fit$importance),
+      importance = model_fit$importance
+    )
+    data.table::fwrite(importance_table, file = glue::glue('{out_file_base}_vimp.csv'))
+  }
 
   # Set prediction function
   prediction_fun <- function(object, newdata){
     cov_matrix <- as.data.frame(newdata[, ..feature_fields])
     # Get nPx - probability of surviving to next age group = 1 - nQx
-    npx_matrix <- randomForestSRC::predict.rfsrc(
-      object = object, newdata = cov_matrix, proximity = F, distance = F, forest.wt = F,
-      outcome ='train'
-    )$survival
+    predictions <- randomForestSRC::predict.rfsrc(
+      object = object, newdata = cov_matrix
+    )
+    keep_intervals <- which(predictions$time.interest %in% age_group_merge_table$ttodead)
+    npx_matrix <- predictions$survival[, keep_intervals]
     # In all age bins except the first, survival probabilities are conditional on
     #  surviving the previous age bin
     age_bins <- seq_len(ncol(npx_matrix))
     for(ii in rev(age_bins[-1])){
       npx_matrix[, ii] <- npx_matrix[, ii] / npx_matrix[, ii - 1]
     }
-    predictions <- rep(NA_real_, times = nrow(newdata))
+    # Mortality risk = 1 - survival probability
+    nqx_matrix <- 1 - npx_matrix
+    q_predictions <- rep(NA_real_, times = nrow(newdata))
     for(ii in seq_len(ncol(npx_matrix))){
       which_in_bin <- which(newdata$age_group_idx == ii)
-      predictions[which_in_bin] <- 1 - npx_matrix[which_in_bin, ii]
+      q_predictions[which_in_bin] <- 1 - npx_matrix[which_in_bin, ii]
     }
-    return(predictions)
+    q_predictions[is.na(q_predictions)] <- mean(na.omit(q_predictions))
+    return(q_predictions)
   }
 } else {
   # CASE: caret models
@@ -183,8 +205,9 @@ if(holdout != 0L) quit(save = 'no', status = 0)
 marginal_imputer <- mch.ml::MarginalImputer$new(
   model = model_fit,
   features_table = test_data,
+  feature_fields = feature_fields,
   outcomes = test_data[[outcome_field]],
-  default_features = age_group_fields,
+  default_features = if(METHOD == 'rsf') character(0) else age_group_fields,
   loss_fun = mch.ml::get_loss_function('L2'),
   prediction_fun = prediction_fun
 )
