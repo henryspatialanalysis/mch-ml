@@ -9,8 +9,8 @@ library(data.table); library(ggplot2)
 working_dir <- '~/temp_data/usaid-mch-ml'
 dataset <- 'SN2019DHS'
 country_name <- "Senegal"
-prepared_data_version <- '20240312'
-results_version <- '20240505'
+prepared_data_version <- '20240516'
+results_version <- '20240521'
 
 
 ## Load all results from this model version --------------------------------------------->
@@ -126,10 +126,6 @@ shapley_fig <- ggplot(data = shapley_meta) +
   scale_y_continuous(labels = scales::comma) +
   guides(fill=guide_legend(ncol=2)) +
   theme_bw()
-
-pdf(glue::glue("{viz_dir}/shapley_graph_{dataset}.pdf"), height = 8, width = 12)
-print(shapley_fig)
-dev.off()
 
 png(
   glue::glue("{viz_dir}/shapley_graph_{dataset}.png"),

@@ -7,10 +7,10 @@
 library(data.table); library(ggplot2)
 
 working_dir <- '~/temp_data/usaid-mch-ml'
-method_name <- 'treebag'
-title <- 'Relative feature importance: Bagged Regression Trees'
-prepared_data_version <- '20240312'
-results_version <- '20240505'
+method_name <- 'rf'
+title <- 'Relative feature importance: Random forest'
+prepared_data_version <- '20240516'
+results_version <- '20240521'
 
 all_surveys <- data.table::data.table(
   survey_id = c("CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "PH2022DHS", "SN2019DHS", "AVERAGE"),
@@ -26,12 +26,16 @@ if(!dir.exists(viz_dir)) dir.create(viz_dir)
 
 shapley_vals <- list.files(model_dir, pattern = 'shapley_vals', full.names = TRUE) |>
   grep(pattern = method_name, value = TRUE) |>
+  grep(pattern = paste0(all_surveys$survey_id, collapse = '|'), value = TRUE) |>
   lapply(data.table::fread) |>
   data.table::rbindlist()
+# Ignore old features not used in the current model set
+old_features <- c('w_hg_adjusted', 'w_edu_years', 's_vax_pneumo3')
+shapley_vals <- shapley_vals[!feature %in% old_features, ]
 
 shapley_vals <- shapley_vals[
   , .(shapley_value_norm = mean(shapley_value_norm)), by = .(survey_id, method, feature)
-]
+][, shapley_value_norm := shapley_value_norm / sum(shapley_value_norm), by = survey_id]
 average_vals <- shapley_vals[
   , .(shapley_value_norm = mean(shapley_value_norm)), by = .(method, feature)
 ][, shapley_value_norm := shapley_value_norm / sum(shapley_value_norm)][, survey_id := "AVERAGE"]
@@ -103,10 +107,6 @@ shapley_fig <- ggplot(data = shapley_meta) +
   scale_y_continuous(labels = scales::percent) +
   guides(fill=guide_legend(ncol=2)) +
   theme_bw()
-
-pdf(glue::glue("{viz_dir}/shapley_graph_relative_{method_name}.pdf"), height = 8, width = 12)
-print(shapley_fig)
-dev.off()
 
 png(
   glue::glue("{viz_dir}/shapley_graph_relative_{method_name}.png"),
