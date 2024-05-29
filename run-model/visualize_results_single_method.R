@@ -7,16 +7,17 @@
 library(data.table); library(ggplot2)
 
 working_dir <- '~/temp_data/usaid-mch-ml'
-method_name <- 'rf'
-title <- 'Relative feature importance: Random forest'
+method_name <- 'treebag'
+title <- 'Relative feature importance: Logistic regression'
 prepared_data_version <- '20240516'
 results_version <- '20240521'
 
 all_surveys <- data.table::data.table(
-  survey_id = c("CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "PH2022DHS", "SN2019DHS", "AVERAGE"),
-  country = c("Cote d'Ivoire", "Ghana", "Kenya", "Madagascar", "Philippines", "Senegal", "AVERAGE")
+  survey_id = c("CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "NG2018DHS", "PH2022DHS", "SN2019DHS", "AVERAGE"),
+  country = c("Cote d'Ivoire", "Ghana", "Kenya", "Madagascar", "Nigeria", "Philippines", "Senegal", "AVERAGE")
 )
 all_surveys$country <- factor(all_surveys$country, levels = all_surveys$country)
+
 
 ## Load all results from this model version --------------------------------------------->
 
@@ -52,9 +53,7 @@ shapley_meta <- merge(x = shapley_full, y = feature_meta, by = 'feature', all.x 
 
 # Check for missing feature metadata
 missing_features <- setdiff(shapley_full$feature, feature_meta$feature)
-if(length(missing_features) > 0){
-  stop("Missing feature metadata for: ", paste(missing_features, collapse = ", "))
-}
+shapley_meta <- shapley_meta[!feature %in% missing_features, ]
 
 # Get relative importance of themes
 theme_sort <- (shapley_meta
