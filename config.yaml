@@ -24,7 +24,7 @@ age_groups:
 versions:
   prepared_data: '20240516'
   imputed_data: '20240516'
-  model_results: '20240516'
+  model_results: '20240521'
 directories:
   r_package:
     versioned: FALSE
@@ -45,7 +45,7 @@ directories:
     path: '~/temp_data/usaid-mch-ml/imputed_data'
   shps:
     versioned: FALSE
-    path: '/mnt/c/Users/Lenovo/OneDrive - Henry Spatial Analysis LLC/Henry Spatial Analysis/DHS/Sharing/Updated GAUL shapefile/updated_gaul_v2'
+    path: '/mnt/c/Users/Lenovo/OneDrive - Henry Spatial Analysis LLC/Clients/DHS/Sharing/Updated GAUL shapefile/updated_gaul_v2'
     files:
       adm0: 'g2015_2014_0.shp'
       adm1: 'g2015_2014_1.shp'
