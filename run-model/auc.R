@@ -4,7 +4,7 @@
 ## 
 ## #######################################################################################
 
-load_pkgs <- c('data.table', 'ggplot2', 'scales', 'glue', 'pROC')
+load_pkgs <- c('data.table', 'ggplot2', 'scales', 'glue', 'pROC', 'gridExtra')
 lapply(load_pkgs, library, character.only = T) |> suppressPackageStartupMessages() |> invisible()
 
 working_dir <- '~/temp_data/usaid-mch-ml'
@@ -182,5 +182,106 @@ for(risk_cutoff in risk_cutoffs){
   fwrite(cm, file = glue::glue("{viz_dir}/confusion_matrix_{risk_cutoff * 100}.csv"))
 }
 
-## Get AUC by subnational unit ---------------------------------------------------------->
+## Map recall by admin1 unit for each country ------------------------------------------->
 
+ADM1_RECALL_CUTOFF <- 0.05
+
+# Load admin1 shapefile
+adm1_sf <- sf::st_read(file.path(
+  "/mnt/c/Users/Lenovo/OneDrive - Henry Spatial Analysis LLC/Clients/DHS/Sharing",
+  "Updated GAUL shapefile/updated_gaul_v2/g2015_2014_1.shp"
+))
+adm1_sf[adm1_sf$ADM0_CODE == 66, 'ADM0_NAME'] <- "Cote d'Ivoire"
+adm1_sub <- adm1_sf[adm1_sf$ADM0_NAME %in% cluster_locations$country, ]
+
+# Merge on admin1 location codes for each cluster
+cluster_locations <- (indiv_results
+  [, .(country, survey_id, cluster, x, y)]
+  [, lapply(.SD, mean), by = .(country, survey_id, cluster)]
+) |> sf::st_as_sf(coords = c('x', 'y'), crs = sf::st_crs('EPSG:4326'))
+adm1_by_cluster <- sf::st_join(
+  x = cluster_locations, y = adm1_sub[, c('ADM0_NAME', 'ADM1_CODE')]
+) |> as.data.table()
+adm1_by_cluster <- adm1_by_cluster[ADM0_NAME == country, .(country, cluster, ADM1_CODE)]
+indiv_results[adm1_by_cluster, ADM1_CODE := i.ADM1_CODE, on = c('country', 'cluster')]
+
+# Calculate recall by admin1
+recall_adm1 <- (indiv_results
+  [method %in% c('rf', 'treebag'), ]
+  [, est := (oos >= ADM1_RECALL_CUTOFF) ]
+  [, .(
+      tp = round(sum(died & est) / 5),
+      fn = round(sum(died & !est) / 5)
+    ),
+    by = .(country, ADM1_CODE, method)
+  ]
+  [, recall := tp / (tp + fn)]
+)
+adm1_sub$dummy <- 1L
+method_merge <- data.table::data.table(method = c('rf', 'treebag'), dummy = 1L)
+recall_sf <- adm1_sub |> 
+  merge(y = method_merge, by = 'dummy') |>
+  merge(y = recall_adm1, by = c('ADM1_CODE', 'method'), all.x = TRUE)
+
+# Function to create a faceted recall plot
+recall_colors <- RColorBrewer::brewer.pal(name = 'YlGnBu', n = 9)[2:9]
+build_recall_plot <- function(data){
+  index <- data.table::CJ(
+    countries = sort(unique(data$ADM0_NAME)),
+    methods = c("rf", "treebag")
+  )[order(countries, methods)]
+  knitr::kable(index)
+  grobs_list <- vector('list', length = nrow(index))
+  for(ii in index[, .I]){
+    data_sub <- data[data$ADM0_NAME == index$countries[ii] & data$method == index$methods[ii], ]
+    fig <- ggplot() + 
+      geom_sf(data = data_sub, aes(fill = recall), lwd = 0.25, color = '#222222') +
+      scale_fill_gradientn(
+        colors = recall_colors, limits = c(.3, .7), oob = scales::squish,
+        labels = scales::percent, guide = 'none'
+      ) + 
+      labs(x = '', y = '') + 
+      theme_minimal() + 
+      theme(axis.text = element_blank(), panel.grid = element_blank())
+    grobs_list[[ii]] <- ggplot2::ggplotGrob(fig)
+  }
+  gridExtra::arrangeGrob(
+    grobs = grobs_list,
+    layout_matrix = matrix(seq_len(nrow(index)), nrow = 2, byrow = F)
+  )
+}
+
+png(file.path(viz_dir, 'recall_p1.png'), height = 7, width = 10, units = 'in', res = 300)
+fig <- build_recall_plot(recall_sf[recall_sf$ADM0_NAME %in% c('Philippines', 'Ghana', 'Kenya'), ])
+plot(fig)
+dev.off()
+
+png(file.path(viz_dir, 'recall_p2.png'), height = 7, width = 10, units = 'in', res = 300)
+fig <- build_recall_plot(recall_sf[!recall_sf$ADM0_NAME %in% c('Philippines', 'Ghana', 'Kenya'), ])
+plot(fig)
+dev.off()
+
+
+
+
+# Create plot
+recall_plot <- ggplot() + 
+  facet_grid(method ~ ADM0_NAME) + 
+  geom_sf(data = recall_sf, aes(fill = recall), lwd = 0.25, color = '#222222') + 
+  scale_fill_gradientn(
+    colors = recall_colors,
+    na.value = '#aaaaaa',
+    limits = c(.3, .7001),
+    breaks = seq(.3, .7, by = .1),
+    oob = scales::squish,
+    labels = scales::percent
+  ) + 
+  theme_minimal() +
+  theme(
+    axis.text = element_blank(),
+    panel.grid = element_blank()
+  ) + 
+  labs(fill = 'Recall')
+png(file.path(viz_dir, 'recall_maps.png'), height = 8, width = 20, units = 'in', res = 300)
+plot(recall_plot)
+dev.off()
