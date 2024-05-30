@@ -1,4 +1,12 @@
-# Map completeness of mortality data and predictors
+## #######################################################################################
+##
+## PLOT PREDICTOR COMPLETENESS
+##
+## AUTHOR: Nat Henry, nat@henryspatialanalysis.com
+## CREATED: February 2024
+## PURPOSE: Visualize the completeness of each predictor in the prepared dataset
+##
+## #######################################################################################
 
 CONFIG_PATH <- '~/repos/usaid-mch-ml/config.yaml'
 
