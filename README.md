@@ -8,6 +8,7 @@ This is the code repository for the USAID + DHS "MCH ML" project for predictors 
 - `config.yaml`: The project configuration file, to be used with the [`versioning`](https://cran.r-project.org/web/packages/versioning/index.html) R package.
 - `r-package/`: This contains project functions structured as an [R package](https://r-pkgs.org/). You can load all package functions in your R session using `devtools::load_all("/path/to/usaid-mch-ml/r-package/")`, which will give access to the functions and their documentation (via `help(function_name)`)
 - `data-prep/`: Scripts used to prepare the data used for analysis. Saved to the "prepared_data" folder in the config.
+- `run-model/`: Scripts used to run the machine learning models and visualize model results. Saved to the "model_results" folder in the config.
 - `exploratory/`: Scripts used for one-off testing and simple use cases.
 
 
