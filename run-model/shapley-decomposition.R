@@ -12,8 +12,8 @@
 ## SETUP -------------------------------------------------------------------------------->
 
 # Set globals
-REPO_FP <- '~/efs-mount/repos/usaid-mch-ml/r-package'
-CONFIG_FP <- file.path('~/efs-mount/repos/usaid-mch-ml/config_remote.yaml')
+REPO_FP <- '~/repos/usaid-mch-ml/r-package'
+CONFIG_FP <- file.path('~/repos/usaid-mch-ml/config.yaml')
 
 parser <- argparse::ArgumentParser()
 parser$add_argument('--imp', type = 'integer')
@@ -184,7 +184,7 @@ if(METHOD == 'rsf'){
 
   # Set prediction function
   prediction_fun <- function(object, newdata){
-    stats::predict(self$model, newdata = subset_data, type = "prob")[, as.character(1)]
+    stats::predict(object, newdata = newdata, type = "prob")[, as.character(1)]
   }  
 }
 
