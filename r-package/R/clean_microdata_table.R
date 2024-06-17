@@ -100,7 +100,7 @@ clean_microdata_using_codebook <- function(microdata, codebook){
   prepared_cols <- colnames(m_clean)
 
   # If age in months is missing, assign it for living children
-  if(!'c_age_months' %in% prepared_cols){
+  if((!'c_age_months' %in% prepared_cols) & all(c('in_month_cmc', 'c_birth_cmc') %in% prepared_cols)){
     m_clean[, c_age_months := round(int_month_cmc - c_birth_cmc) ]
     prepared_cols <- colnames(m_clean)
   }
@@ -144,11 +144,18 @@ clean_microdata_using_codebook <- function(microdata, codebook){
   }
 
   # Construct women's empowerment SDG indicator
-  sdg_cols <- intersect(c('w_decision_contra', 'w_decision_hc', 'w_beating_sex'), prepared_cols)
-  if(length(sdg_cols) == 3L){
-    m_clean[, w_empowered_sdg := w_decision_contra * w_decision_hc * (1 - w_beating_sex)]
+  sdg_cols <- c('w_decision_contra', 'w_decision_hc', 'w_decision_sex')
+  if(all(sdg_cols %in% prepared_cols)){
+    m_clean[, w_empowered_sdg := w_decision_contra * w_decision_hc * w_decision_sex ]
   }
-  for(sdg_col in sdg_cols) m_clean[, (sdg_col) := NULL ]
+
+  # Construct binary stunting and wasting indicators
+  if('haz' %in% prepared_cols){
+    m_clean[, stunting := as.integer(haz < -200) ]
+  }
+  if('whz' %in% prepared_cols){
+    m_clean[, wasting := as.integer(whz < -200) ]
+  }
 
   # Construct skilled ANC and skilled birth attendance indicators
   skilled_attendants <- c('doctor','nurse','midwife','chw','aux_midwife')

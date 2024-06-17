@@ -19,7 +19,6 @@ get_rdhs_cache_directory <- function(){
 }
 
 #' Get DHS survey metadata
-#' Get DHS survey metadata
 #' 
 #' @description Pull DHS internal survey metadata based on country, year, and survey type
 #' 
@@ -119,7 +118,7 @@ download_dhs_microdata <- function(survey_id, topics_regex = character(0)){
     data.table::as.data.table() |>
     suppressMessages()
   survey_files_table <- all_datasets[
-      (DatasetType == 'Survey Datasets') & grepl('dta', FileFormat),
+    (DatasetType == 'Survey Datasets') & grepl('dta', FileFormat),
   ]
   if(length(topics_regex) > 0L) survey_files_table <- survey_files_table[
     grepl(paste(topics_regex, collapse='|'), survey_files_table$FileType),

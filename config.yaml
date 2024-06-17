@@ -1,5 +1,7 @@
 countries: ["Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria", "Philippines"]
 survey_ids: ["CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
+map_indicators: ['stunting', 'wasting', 'hhwi_cont', 'w_age_first_birth', 'w_empowered_sdg']
+continuous_indicator: ['w_age_first_birth', 'hhwi_cont']
 completeness_threshold: 0.3
 n_holdouts: 5
 n_imputations: 5
@@ -25,6 +27,7 @@ versions:
   prepared_data: '20240516'
   imputed_data: '20240516'
   model_results: '20240521'
+  prepared_data_stage_2: '20240603'
 directories:
   r_package:
     versioned: FALSE
@@ -34,15 +37,22 @@ directories:
     path: '~/temp_data/usaid-mch-ml/metadata'
     files:
       codebook: 'codebook_20240516.csv'
+      codebook_stage_2: 'codebook_stage_2_20240603.csv'
   prepared_data:
     versioned: TRUE
     path: '~/temp_data/usaid-mch-ml/prepared_data'
-  model_results:
-    versioned: TRUE
-    path: '~/temp_data/usaid-mch-ml/model_results'
   imputed_data:
     versioned: TRUE
     path: '~/temp_data/usaid-mch-ml/imputed_data'
+  model_results:
+    versioned: TRUE
+    path: '~/temp_data/usaid-mch-ml/model_results'
+  prepared_data_stage_2:
+    versioned: TRUE
+    path: '~/temp_data/usaid-mch-ml/prepared_data_stage_2'
+  mapped_indicators:
+    versioned: TRUE
+    path: '~/temp_data/usaid-mch-ml/mapped_indicators'
   shps:
     versioned: FALSE
     path: '/mnt/c/Users/Lenovo/OneDrive - Henry Spatial Analysis LLC/Clients/DHS/Sharing/Updated GAUL shapefile/updated_gaul_v2'
