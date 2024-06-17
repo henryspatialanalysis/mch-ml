@@ -28,19 +28,12 @@ dir.create(out_dir, recursive = T, showWarnings = F)
 # Get settings: variables and countries to prepare
 prepare_countries <- config$get("countries")
 codebook <- config$read('metadata', 'codebook_stage_2')
-
-
-## LOAD DATA FILES ---------------------------------------------------------------------->
-
-# Create lists to store prepared microdata
 prepare_topics <- sort(unique(codebook$topic))
-prepared_microdata_list <- lapply(prepare_topics, function(pt){
-  null_list <- vector('list', length = length(prepare_countries))
-  names(null_list) <- prepare_countries
-  return(null_list)
-})
-names(prepared_microdata_list) <- prepare_topics
 
+
+## PREPARE DATA FILES ------------------------------------------------------------------->
+
+# Iterate through countries and topics
 for(prepare_country in prepare_countries){
 
   tictoc::tic(glue::glue("Full data preparation for {prepare_country}"))
@@ -79,43 +72,41 @@ for(prepare_country in prepare_countries){
       microdata = microdata_list[[prepare_topic]],
       codebook = country_codebook[topic == prepare_topic, ]
     ) |> merge(y = cluster_metadata, by = 'cluster', all.x = TRUE)
-    # Add ISO code
-    cleaned_table <- cbind(data.table(country = prepare_country), cleaned_table)
-    # Add to prepared list
-    prepared_microdata_list[[prepare_topic]][[prepare_country]] <- cleaned_table
+    # Add country
+    cleaned_table$country <- prepare_country
+
+    # Save to file
+    fwrite(cleaned_table, file = glue::glue("{out_dir}/microdata_{prepare_topic}_{prepare_country}.csv"))
+
+    # Collapse and save each indicator
+    topic_indicators <- intersect(config$get('map_indicators'), colnames(cleaned_table))
+    for(indic in topic_indicators){
+      if(indic %in% config$get('continuous_indicators')){
+        collapsed <- cleaned_table[
+          !is.na(get(indic)),
+          .(
+            mean = mean(get(indic)),
+            sd = sd(get(indic)) / sqrt(.N),
+            count = .N
+          ),
+          by = .(country, cluster, latitude, longitude, admin1_code, admin1_name, holdout_id)
+        ]
+      } else {
+        collapsed <- cleaned_table[
+          !is.na(get(indic)),
+          .(
+            outcome = sum(get(indic)),
+            count = .N
+          ),
+          by = .(country, cluster, latitude, longitude, admin1_code, admin1_name, holdout_id)
+        ]
+      }
+      fwrite(collapsed, file = glue::glue("{out_dir}/collapsed_{indic}_{prepare_country}.csv"))
+    }
+    rm(list = c('cleaned_table', 'collapsed')); gc(full = TRUE, verbose = FALSE)
   }
+  # Clean up
+  rm(list = c('microdata_list')); gc(full = TRUE, verbose = FALSE)
   tictoc::toc() # End codebook cleaning
   tictoc::toc() # End country data prep
-}
-
-# Combine prepared microdata across countries and collapse by indicator
-for(prepare_topic in prepare_topics){
-  topic_microdata <- data.table::rbindlist(prepared_microdata_list[[prepare_topic]])
-  # Save microdata to file
-  fwrite(topic_microdata, file = glue::glue("{out_dir}/microdata_{prepare_topic}.csv"))
-  # Collapse indicators
-  topic_indicators <- intersect(config$get('map_indicators'), colnames(prepare_topic))
-  for(indic in topic_indicators){
-    if(indic %in% config$get('continuous_indicators')){
-      collapsed <- topic_microdata[
-        !is.na(get(indic)),
-        .(
-          mean = mean(get(indic)),
-          sd = sd(get(indic)) / sqrt(.N),
-          count = .N
-        ),
-        by = .(country, cluster, latitude, longitude, admin1_code, admin1_name, holdout_id)
-      ]
-    } else {
-      collapsed <- topic_microdata[
-        !is.na(get(indic)),
-        .(
-          outcome = sum(get(indic)),
-          count = .N
-        ),
-        by = .(country, cluster, latitude, longitude, admin1_code, admin1_name, holdout_id)
-      ]
-    }
-    fwrite(collapsed, file = glue::glue("{out_dir}/collapsed_{indic}.csv"))
-  }
 }

@@ -1,7 +1,7 @@
 countries: ["Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria", "Philippines"]
 survey_ids: ["CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
 map_indicators: ['stunting', 'wasting', 'hhwi_cont', 'w_age_first_birth', 'w_empowered_sdg']
-continuous_indicator: ['w_age_first_birth', 'hhwi_cont']
+continuous_indicators: ['w_age_first_birth', 'hhwi_cont']
 completeness_threshold: 0.3
 n_holdouts: 5
 n_imputations: 5
