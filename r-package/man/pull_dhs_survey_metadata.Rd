@@ -2,8 +2,7 @@
 % Please edit documentation in R/download_dhs_microdata.R
 \name{pull_dhs_survey_metadata}
 \alias{pull_dhs_survey_metadata}
-\title{Get DHS survey metadata
-Get DHS survey metadata}
+\title{Get DHS survey metadata}
 \usage{
 pull_dhs_survey_metadata(country, years = "most_recent", survey_types = "all")
 }
