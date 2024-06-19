@@ -14,7 +14,7 @@
 MBG_PATH <- '~/repos/mbg/'
 REPO_PATH <- '~/repos/usaid-mch-ml/r-package/'
 CONFIG_PATH <- '~/repos/usaid-mch-ml/config.yaml'
-VERSION_BASE <- '20240618'
+VERSION_BASE <- '20240619'
 
 # Load standard packages
 load_packages <- c(
@@ -39,8 +39,6 @@ adm2_data_full <- config$read('shps', 'adm2')
 adm2_data_full$ADM0_NAME <- iconv(adm2_data_full$ADM0_NAME, to = 'ASCII//TRANSLIT')
 adm2_list <- lapply(run_countries, function(this_country){
   adm2_data_sub <- adm2_data_full[tolower(adm2_data_full$ADM0_NAME) == tolower(this_country), ]
-  # Fix for a shapefile issue in Ghana
-  if(this_country == "Ghana") adm2_data_sub <- adm2_data_sub[adm2_data_sub$ADM2_CODE != 190611, ]
   adm2_data_sub$polygon_id <- seq_len(nrow(adm2_data_sub))
   return(adm2_data_sub)
 })
