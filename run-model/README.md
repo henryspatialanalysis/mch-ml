@@ -1,6 +1,6 @@
 # ML model scripts
 
-This package contains scripts to run individual mortality prediction models and visualize the results for the Stage 1 analysis.
+This folder contains scripts to run individual mortality prediction models and visualize the results for the Stage 1 analysis.
 
 ## Scripts
 
