@@ -58,7 +58,7 @@ mbg_settings:
       covariates: TRUE
       spde: TRUE
       nugget: TRUE
-      admin1: TRUE
+      admin1: FALSE
     mesh:
       integrate_to_zero: TRUE
       cutoff: 0.05
