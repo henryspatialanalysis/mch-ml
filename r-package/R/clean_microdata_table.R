@@ -155,6 +155,11 @@ clean_microdata_using_codebook <- function(microdata, codebook){
     m_clean[, wasting := as.integer(whz < -200) ]
   }
 
+  # Construct binary indicator: woman's first birth occurred under age 18
+  if('w_age_first_birth' %in% prepared_cols){
+    m_clean[, first_birth_u18 := as.integer(w_age_first_birth < 18) ]
+  }
+
   # Construct skilled ANC and skilled birth attendance indicators
   skilled_attendants <- c('doctor','nurse','midwife','chw','aux_midwife')
   sba_cols <- paste0('p_sba_', skilled_attendants)
