@@ -43,7 +43,8 @@ for(prepare_country in prepare_countries){
   tictoc::tic("  -> DHS survey microdata download")
   survey_metadata <- mch.ml::pull_dhs_survey_metadata(
     country = prepare_country,
-    survey_types = 'DHS'
+    survey_types = 'DHS',
+    year = ifelse(prepare_country == 'Senegal', '2019', 'most_recent')
   )
   survey_id <- survey_metadata$SurveyId
   microdata_list <- mch.ml::download_dhs_microdata(
