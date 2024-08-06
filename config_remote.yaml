@@ -1,5 +1,7 @@
 countries: ["Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria", "Philippines"]
 survey_ids: ["CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
+map_indicators: ['stunting', 'wasting', 'hhwi_cont', 'first_birth_u18', 'w_empowered_sdg']
+continuous_indicators: ['hhwi_cont']
 completeness_threshold: 0.3
 n_holdouts: 5
 n_imputations: 5
@@ -21,32 +23,99 @@ age_groups:
   a24mo: [24, 36]
   a36mo: [36, 48]
   a48mo: [48, 60]
+mbg_settings:
+  modeling_crs: 'EPSG:4326'
+  shapefile_settings:
+    modeling_level: 2
+    ids:
+      adm0: ['ADM0_CODE','ADM0_NAME']
+      adm1: ['ADM1_CODE','ADM1_NAME','ADM0_CODE','ADM0_NAME']
+      adm2: ['ADM2_CODE','ADM2_NAME','ADM1_CODE','ADM1_NAME','ADM0_CODE','ADM0_NAME']
+  covariate_settings:
+    file_format: 'tif'
+    add_intercept: TRUE
+  pop_covariate_settings:
+    covariate: 'worldpop_total'
+    annual: TRUE
+    transform: 'identity'
+    normalize: FALSE
+  stacking_settings:
+    run_stacking: TRUE
+    adm1_fixed_effects: TRUE
+    submodels:
+      enet: ~
+      gam: ~
+      gbm:
+        verbose: FALSE
+      treebag: ~
+      nnet: ~
+    cv:
+      method: 'repeatedcv'
+      number: 5
+      repeats: 5
+  inla_settings:
+    sample_size_field: 'count'
+    effects:
+      covariates: TRUE
+      spde: TRUE
+      nugget: TRUE
+      admin1: TRUE
+    mesh:
+      integrate_to_zero: TRUE
+      cutoff: 0.05
+    priors:
+      range:
+        threshold: 0.05
+        prob_below: 0.05
+      sigma:
+        threshold: 1.0
+        prob_above: 0.05
+      fixed_effects:
+        threshold: 1.0
+        prob_above: 0.05
+      nugget:
+        threshold: 0.25
+        prob_above: 0.01
+      admin1:
+        threshold: 0.5
+        prob_above: 0.05
+  prediction_settings:
+    n_samples: 250
+    ui_width: 0.95
+    nugget_in_predict: TRUE
 versions:
-  prepared_data: '20240516'
-  imputed_data: '20240516'
   model_results: '20240516'
+  mbg_input_data: '20240805'
+  mbg_model_results: '20240805'
 directories:
+  repo:
+    versioned: FALSE
+    path: '~/efs-mount/repos/usaid-mch-ml'
+    files:
+      model_specs: 'mbg_model_specs.csv'
+      covariates_table: 'mbg_covariates_table.csv'
   r_package:
     versioned: FALSE
-    path: '~/repos/usaid-mch-ml/r-package'
-  metadata:
-    versioned: FALSE
-    path: '~/temp_data/usaid-mch-ml/metadata'
-    files:
-      codebook: 'codebook_20240215.csv'
-  prepared_data:
-    versioned: TRUE
-    path: '~/temp_data/usaid-mch-ml/prepared_data'
+    path: '~/efs-mount/repos/usaid-mch-ml/r-package'
   model_results:
-    versioned: FALSE
+    versioned: TRUE
     path: '~/efs-mount/usaid/model_results'
   imputed_data:
     versioned: FALSE
     path: '~/efs-mount/usaid/imputed_data'
-  shps:
+  mbg_input_data:
+    versioned: TRUE
+    path: '~/efs-mounts/mbg_inputs/input_data'
+  mbg_covariates:
     versioned: FALSE
-    path: '/mnt/c/Users/Lenovo/OneDrive - Henry Spatial Analysis LLC/Henry Spatial Analysis/DHS/Sharing/Updated GAUL shapefile/updated_gaul_v2'
+    path: '~/efs-mount/mbg_inputs/covariates'
+  mbg_shapefile:
+    versioned: FALSE
+    path: '~/efs-mount/mbg_inputs/shp'
     files:
-      adm0: 'g2015_2014_0.shp'
-      adm1: 'g2015_2014_1.shp'
-      adm2: 'g2015_2014_2.shp'
+      adm0: 'adm0_subset.RDS'
+      adm1: 'adm1_subset.RDS'
+      adm2: 'adm2_subset.RDS'
+  mbg_model_results:
+    versioned: TRUE
+    path: '~/efs-mount/mbg_outputs/'
