@@ -19,7 +19,12 @@ sudo apt update &&
     sudo apt -y upgrade &&
     sudo apt install -y postgresql postgresql-client nfs-kernel-server \
     libgdal-dev gdal-bin libudunits2-dev libssl-dev libfontconfig1-dev libharfbuzz-dev \
-    libfribidi-dev cmake;
+    libfribidi-dev cmake openjdk-21-jdk-headless;
+
+# Add default Java path
+cd /usr/lib/jvm/ &&
+  sudo ln -s ./java-21-openjdk-amd64 ./default-java &&
+  cd ~;
 
 # First time or on reboot: mount EFS instance
 mkdir ~/efs-mount;
@@ -67,10 +72,11 @@ sudo apt update &&
 sudo R -e "install.packages('Matrix')";
 # --> Install all other INLA and MBG dependencies
 sudo R -e "install.packages(setdiff(c( \
-    'argparse', 'assertthat', 'caret', 'data.table', 'devtools', 'elasticnet', 'fmesher', \
-    'gbm', 'glue', 'graphics', 'grDevices', 'gtools', 'lifecycle', 'MatrixModels', 'matrixStats', \
-    'methods', 'mgcv', 'nlme', 'nnet', 'parallel', 'purrr', 'R6', 'rdhs', 'rJava', 'rlang', \
-    'r5r', 'sn', 'sf', 'splines', 'stats', 'terra', 'tictoc', 'utils', 'versioning', 'withr'
+  'argparse', 'assertthat', 'caret', 'data.table', 'devtools', 'elasticnet', 'fmesher', \
+  'gbm', 'glue', 'graphics', 'grDevices', 'gtools', 'lifecycle', 'MatrixModels', \
+  'matrixStats', 'methods', 'mgcv', 'nlme', 'nnet', 'osmdata', 'parallel', 'purrr', 'r5r', \
+  'R6', 'rdhs', 'rJava', 'rlang', 'RPostgreSQL', 'sn', 'sf', 'splines', 'stats', 'terra', \
+  'tictoc', 'tidytransit', 'utils', 'versioning', 'withr'
 ), installed.packages()[, 'Package']))";
 # --> INLA
 sudo R -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/stable', dep=TRUE)";
@@ -80,3 +86,5 @@ cd ~/efs-mount/repos/ &&
     sudo R CMD INSTALL pixel2poly_0.0.0.9000.tar.gz &&
     sudo R CMD INSTALL mch.ml_0.0.0.9000.tar.gz &&
     cd ~/;
+# Fix for INLA permissions
+sudo chmod -R 0777 /usr/local/lib/R/site-library/INLA/bin/linux/;
