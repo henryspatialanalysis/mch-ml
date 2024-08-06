@@ -86,6 +86,7 @@ mbg_settings:
 versions:
   model_results: '20240516'
   mbg_input_data: '20240805'
+  mbg_stacking_cache: '20240805'
   mbg_model_results: '20240805'
 directories:
   repo:
@@ -105,10 +106,13 @@ directories:
     path: '~/efs-mount/usaid/imputed_data'
   mbg_input_data:
     versioned: TRUE
-    path: '~/efs-mounts/mbg_inputs/input_data'
+    path: '~/efs-mount/mbg_inputs/input_data'
   mbg_covariates:
     versioned: FALSE
     path: '~/efs-mount/mbg_inputs/covariates'
+  mbg_stacking_cache:
+    versioned: TRUE
+    path: '~/efs_mount/mbg_inputs/stacking_cache'
   mbg_shapefile:
     versioned: FALSE
     path: '~/efs-mount/mbg_inputs/shp'
