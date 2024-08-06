@@ -25,7 +25,6 @@ parser$add_argument("--year", type = 'integer')
 parser$add_argument("--run_set", type = 'character')
 parser$add_argument('--specs', type = 'character')
 parser$add_argument("--config_path", type = 'character', default = DEFAULT_CONFIG_PATH)
-lapply(commandArgs(trailingOnly = TRUE), message) |> invisible()
 globals <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 
 INDICATOR <- globals$indicator
@@ -35,10 +34,10 @@ YEAR <- globals$year
 RUN_SET <- globals$run_set
 SPECS <- globals$specs
 CONFIG_PATH <- globals$config_path
-message(glue::glue(c(
+message(glue::glue(
   "Running {INDICATOR} in {COUNTRY} ({ISO3}) {YEAR}, run set {RUN_SET}, {SPECS} model, ",
   "config at {CONFIG_PATH}"
-)))
+))
 
 
 ## 00) SETTINGS ------------------------------------------------------------------------->
