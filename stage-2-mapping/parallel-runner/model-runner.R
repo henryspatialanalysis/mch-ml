@@ -41,7 +41,7 @@ update_status <- function(runner_id, new_status = 'in_progress'){
 claim_jobs <- function(){
   open_jobs <- conn$queryTable(
     glue::glue("{scheduler_schema}.{scheduler_table}"),
-    criteria = list(run_version = run_version, status = 'not_started')
+    criteria = list(run_set = RUN_SET, status = 'not_started')
   )[order(runner_id)]
   if(nrow(open_jobs >= 1)){
     claimed_job <- open_jobs[1, ]
