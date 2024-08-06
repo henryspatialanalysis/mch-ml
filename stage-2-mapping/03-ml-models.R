@@ -87,7 +87,7 @@ covariates_list <- mbg::load_covariates(
 
 ## RUN IN-SAMPLE STACKING --------------------------------------------------------------->
 
-for(INDICATOR in setdiff(config$get("map_indicators"), c('stunting', 'wasting'))){
+for(INDICATOR in config$get("map_indicators")){
   # Timer for this indicator
   tictoc::tic(glue::glue("  ML model predictions for {INDICATOR} in {COUNTRY}"))
 
@@ -113,7 +113,7 @@ for(INDICATOR in setdiff(config$get("map_indicators"), c('stunting', 'wasting'))
 
   ## Run stacking
   for(holdout_idx in 0:5){
-    tictoc::tic(glue::glue("    Holdout {holdout_idx}"))
+    tictoc::tic(glue::glue("    {INDICATOR}, holdout {holdout_idx}"))
     # Run all ML submodels
     ml_predictions <- mbg::run_regression_submodels(
       input_data = copy(input_data[holdout_id != holdout_idx, ]),
