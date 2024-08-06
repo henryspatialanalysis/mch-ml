@@ -69,8 +69,8 @@ sudo R -e "install.packages('Matrix')";
 sudo R -e "install.packages(setdiff(c( \
     'argparse', 'assertthat', 'caret', 'data.table', 'devtools', 'elasticnet', 'fmesher', \
     'gbm', 'glue', 'graphics', 'grDevices', 'gtools', 'lifecycle', 'MatrixModels', 'matrixStats', \
-    'methods', 'mgcv', 'nlme', 'nnet', 'parallel', 'purrr', 'R6', 'rdhs', 'rlang', 'sn', 'sf', \
-    'splines', 'stats', 'terra', 'tictoc', 'utils', 'versioning', 'withr'
+    'methods', 'mgcv', 'nlme', 'nnet', 'parallel', 'purrr', 'R6', 'rdhs', 'rJava', 'rlang', \
+    'r5r', 'sn', 'sf', 'splines', 'stats', 'terra', 'tictoc', 'utils', 'versioning', 'withr'
 ), installed.packages()[, 'Package']))";
 # --> INLA
 sudo R -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/stable', dep=TRUE)";
