@@ -123,3 +123,8 @@ directories:
   mbg_model_results:
     versioned: TRUE
     path: '~/efs-mount/mbg_outputs/'
+    files:
+      in_sample_results: 'in_sample_results.csv'
+      out_of_sample_results: 'out_of_sample_results.csv'
+      id_raster: 'id_raster.tif'
+      cell_draws: 'cell_draws.RDS'
