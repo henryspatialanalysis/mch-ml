@@ -34,6 +34,7 @@ ISO3 <- globals$iso3
 YEAR <- globals$year
 RUN_SET <- globals$run_set
 CONFIG_PATH <- globals$config_path
+message(glue::glue("Running {COUNTRY} ({ISO3}) {YEAR}, run set {RUN_SET}, config at {CONFIG_PATH}"))
 
 # Load packages
 load_packages <- c('pixel2poly', 'mbg', 'data.table', 'sf', 'glue', 'tictoc', 'versioning')
