@@ -112,7 +112,7 @@ directories:
     path: '~/efs-mount/mbg_inputs/covariates'
   mbg_stacking_cache:
     versioned: TRUE
-    path: '~/efs_mount/mbg_inputs/stacking_cache'
+    path: '~/efs-mount/mbg_inputs/stacking_cache'
   mbg_shapefile:
     versioned: FALSE
     path: '~/efs-mount/mbg_inputs/shp'
