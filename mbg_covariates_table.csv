@@ -1,0 +1,13 @@
+covariate,include,annual,transform,normalize
+access2,TRUE,FALSE,identity,TRUE
+crutstmp,TRUE,TRUE,identity,TRUE
+evi,TRUE,TRUE,identity,TRUE
+ntl,TRUE,TRUE,log1p,TRUE
+worldpop_total,TRUE,TRUE,log1p,TRUE
+crutspre,TRUE,TRUE,identity,TRUE
+elevation,TRUE,FALSE,identity,TRUE
+latitude,TRUE,FALSE,identity,TRUE
+longitude,TRUE,FALSE,identity,TRUE
+tt_hcf,TRUE,FALSE,identity,TRUE
+lstday,FALSE,TRUE,identity,TRUE
+lstdiurnaldiff,FALSE,TRUE,identity,TRUE
