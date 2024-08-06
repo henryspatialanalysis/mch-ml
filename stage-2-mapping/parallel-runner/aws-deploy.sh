@@ -67,10 +67,10 @@ sudo apt update &&
 sudo R -e "install.packages('Matrix')";
 # --> Install all other INLA and MBG dependencies
 sudo R -e "install.packages(setdiff(c( \
-    'assertthat', 'caret', 'data.table', 'devtools', 'elasticnet', 'fmesher', 'gbm', \
-    'glue', 'graphics', 'grDevices', 'lifecycle', 'MatrixModels', 'matrixStats', \
+    'argparse', 'assertthat', 'caret', 'data.table', 'devtools', 'elasticnet', 'fmesher', \
+    'gbm', 'glue', 'graphics', 'grDevices', 'gtools', 'lifecycle', 'MatrixModels', 'matrixStats', \
     'methods', 'mgcv', 'nlme', 'nnet', 'parallel', 'purrr', 'R6', 'rdhs', 'rlang', 'sf', \
-    'splines', 'stats', 'terra', 'tictoc', 'utils', 'withr'
+    'splines', 'stats', 'terra', 'tictoc', 'utils', 'versioning', 'withr'
 ), installed.packages()[, 'Package']))";
 # --> INLA
 sudo R -e "install.packages('INLA', repos='https://inla.r-inla-download.org/R/stable', dep=TRUE)";
