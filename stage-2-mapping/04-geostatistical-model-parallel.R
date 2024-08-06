@@ -8,7 +8,8 @@
 ##
 ## Example call:
 ## Rscript ~/efs-mount/repos/usaid-mch-ml/stage-2-mapping/04-geostatistical-model-parallel.R \
-##   --country Senegal --iso3 SEN --year 2019 --run_set 20240805 --specs default;
+##   --indicator stunting --country Senegal --iso3 SEN --year 2019 --run_set 20240805 \ 
+##   --specs default;
 ##
 ## #######################################################################################
 
@@ -17,6 +18,7 @@ DEFAULT_CONFIG_PATH <- '~/efs-mount/repos/usaid-mch-ml/config_remote.yaml'
 ## Pass globals via command line
 library(argparse)
 parser <- argparse::ArgumentParser()
+parser$add_argument("--indicator", type = 'character')
 parser$add_argument("--country", type = 'character', nargs = '+')
 parser$add_argument("--iso3", type = 'character')
 parser$add_argument("--year", type = 'integer')
@@ -25,15 +27,17 @@ parser$add_argument('--specs', type = 'character')
 parser$add_argument("--config_path", type = 'character', default = DEFAULT_CONFIG_PATH)
 globals <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 
-COUNTRY <- globals$country |> paste()
+INDICATOR <- globals$indicator
+COUNTRY <- globals$country |> paste() # Enable multi-word country names
 ISO3 <- globals$iso3
 YEAR <- globals$year
 RUN_SET <- globals$run_set
 SPECS <- globals$specs
 CONFIG_PATH <- globals$config_path
-message(glue::glue(
-  "Running {COUNTRY} ({ISO3}) {YEAR}, run set {RUN_SET}, {SPECS} model, config at {CONFIG_PATH}"
-))
+message(glue::glue(c(
+  "Running {INDICATOR} in {COUNTRY} ({ISO3}) {YEAR}, run set {RUN_SET}, {SPECS} model, ",
+  "config at {CONFIG_PATH}"
+)))
 
 
 ## 00) SETTINGS ------------------------------------------------------------------------->
