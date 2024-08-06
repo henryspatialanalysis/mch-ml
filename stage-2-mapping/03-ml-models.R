@@ -22,14 +22,14 @@ DEFAULT_CONFIG_PATH <- '~/efs-mount/repos/usaid-mch-ml/config_remote.yaml'
 ## Pass globals via command line
 library(argparse)
 parser <- argparse::ArgumentParser()
-parser$add_argument("--country", type = 'character')
+parser$add_argument("--country", type = 'character', nargs = '+')
 parser$add_argument("--iso3", type = 'character')
 parser$add_argument("--year", type = 'integer')
 parser$add_argument("--run_set", type = 'character')
 parser$add_argument("--config_path", type = 'character', default = DEFAULT_CONFIG_PATH)
 globals <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 
-COUNTRY <- globals$country
+COUNTRY <- globals$country |> paste()
 ISO3 <- globals$iso3
 YEAR <- globals$year
 RUN_SET <- globals$run_set
@@ -87,7 +87,10 @@ covariates_list <- mbg::load_covariates(
 
 ## RUN IN-SAMPLE STACKING --------------------------------------------------------------->
 
-for(INDICATOR in config$get("map_indicators")){
+map_indicators <- config$get("map_indicators")
+if(COUNTRY == 'Philippines') map_indicators <- setdiff(map_indicators, c('stunting', 'wasting'))
+
+for(INDICATOR in map_indicators){
   # Timer for this indicator
   tictoc::tic(glue::glue("  ML model predictions for {INDICATOR} in {COUNTRY}"))
 
