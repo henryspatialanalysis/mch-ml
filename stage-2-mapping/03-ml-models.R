@@ -1,3 +1,4 @@
+#!/usr/bin/Rscript
 ## #######################################################################################
 ##
 ## 03) CACHE ML SUBMODEL PREDICTIONS FOR EACH OUTCOME
@@ -86,7 +87,7 @@ covariates_list <- mbg::load_covariates(
 
 ## RUN IN-SAMPLE STACKING --------------------------------------------------------------->
 
-for(INDICATOR in config$get("map_indicators")){
+for(INDICATOR in setdiff(config$get("map_indicators"), c('stunting', 'wasting'))){
   # Timer for this indicator
   tictoc::tic(glue::glue("  ML model predictions for {INDICATOR} in {COUNTRY}"))
 
