@@ -1,6 +1,6 @@
 ## #######################################################################################
 ##
-## 03) GEOSTATISTICAL MAPPING WORKFLOW
+## 04) GEOSTATISTICAL MAPPING WORKFLOW
 ##
 ## AUTHOR: Nathaniel Henry, nat@henryspatialanalysis.com
 ## CREATED: 10 June 2024
