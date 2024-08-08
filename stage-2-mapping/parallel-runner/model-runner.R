@@ -78,11 +78,12 @@ claimed_job <- claim_jobs()
 while(!is.null(claimed_job)){
   # Run the job
   job_meta <- as.list(claimed_job)
-  job_finish_code <- run_cmd(glue::glue(
+  command <- glue::glue(
     "Rscript {mch_repo}/stage-2-mapping/04-geostatistical-model-parallel.R ",
-    "--indicator {job_meta$indicator} --country {job_meta$country} --iso3 {job_meta$iso3} ",
+    "--indicator {job_meta$indicator} --country \"{job_meta$country}\" --iso3 {job_meta$iso3} ",
     "--year {job_meta$year} --run_set {job_meta$run_set} --specs {job_meta$specs}"
-  ))
+  ) |> gsub(pattern = "'", replacement = "\\\\'")
+  job_finish_code <- run_cmd(command)
   # Update job exit status
   if(job_finish_code == 0L){
     update_status(job_meta$runner_id, new_status = 'finished')
