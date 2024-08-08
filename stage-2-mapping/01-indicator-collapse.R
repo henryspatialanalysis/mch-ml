@@ -22,7 +22,7 @@ config <- versioning::Config$new(CONFIG_PATH)
 devtools::load_all(config$get_dir_path('r_package'))
 
 # Create the output directory
-out_dir <- config$get_dir_path('prepared_data_stage_2')
+out_dir <- config$get_dir_path('mbg_inputs')
 dir.create(out_dir, recursive = T, showWarnings = F)
 
 # Get settings: variables and countries to prepare

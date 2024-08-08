@@ -86,7 +86,7 @@ versions:
   prepared_data: '20240516'
   imputed_data: '20240516'
   model_results: '20240521'
-  prepared_data_stage_2: '20240603'
+  mbg_inputs: '20240603'
 directories:
   r_package:
     versioned: FALSE
@@ -108,41 +108,24 @@ directories:
   model_results:
     versioned: TRUE
     path: '~/temp_data/usaid-mch-ml/model_results'
-  prepared_data_stage_2:
+  mbg_inputs:
     versioned: TRUE
     path: '~/temp_data/usaid-mch-ml/prepared_data_stage_2'
-  shps:
+  mbg_shapefile:
     versioned: FALSE
     path: '/mnt/c/Users/Lenovo/OneDrive - Henry Spatial Analysis LLC/Clients/DHS/Sharing/Geospatial modeling SOP/Edited_gaul'
     files:
       adm0: 'g2015_2014_0.shp'
       adm1: 'g2015_2014_1.shp'
       adm2: 'g2015_2014_2.shp'
-  covariates:
+  mbg_covariates:
     versioned: FALSE
     path: '~/temp_data/rr'
-  mapped_indicators:
-    versioned: TRUE
-    path: '~/temp_data/usaid-mch-ml/mapped_indicators'
+  mbg_model_results:
+    versioned: FALSE
+    path: '~/temp_data/usaid-mch-ml/mbg_model_results/'
     files:
-      adm_boundaries: 'adm_boundaries.shp'
+      in_sample_results: 'in_sample_results.csv'
+      out_of_sample_results: 'out_of_sample_results.csv'
       id_raster: 'id_raster.tif'
-      covariate_rasters: 'covariate_rasters.tif'
-      formatted_input_data: 'formatted_input_data.csv'
-      inla_data_stack: 'inla_data_stack.RDS'
-      inla_model: 'inla_fitted_model.RDS'
-      parameter_draws: 'parameter_draws.RDS'
-      cell_draws: 'cell_draws.csv'
-      cell_pred_mean: 'cell_pred_mean.tif'
-      cell_pred_lower: 'cell_pred_lower.tif'
-      cell_pred_upper: 'cell_pred_upper.tif'
-      cell_pred_ui: 'cell_pred_ui.tif'
-      adm2_draws: 'adm2_draws.csv'
-      adm2_summary_table: 'adm2_summary_table.csv'
-      adm1_draws: 'adm1_draws.csv'
-      adm1_summary_table: 'adm1_summary_table.csv'
-      adm0_draws: 'adm0_draws.csv'
-      adm0_summary_table: 'adm0_summary_table.csv'
-      pop_raster: 'pop_raster.tif'
-      stacked_covariates: 'stacked_covariates.tif'
-      stacked_covariates_adm1: 'stacked_covariates_adm1.csv'
+      cell_draws: 'cell_draws.RDS'

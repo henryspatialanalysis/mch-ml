@@ -22,7 +22,7 @@ config <- versioning::Config$new(CONFIG_PATH)
 devtools::load_all(config$get_dir_path('r_package'))
 
 # Create the output directory
-out_dir <- config$get_dir_path('prepared_data_stage_2')
+out_dir <- config$get_dir_path('mbg_inputs')
 original_dir <- getwd()
 on.exit(setwd(original_dir))
 setwd(out_dir)
