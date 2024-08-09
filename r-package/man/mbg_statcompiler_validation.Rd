@@ -7,6 +7,7 @@
 mbg_statcompiler_validation(
   viz_dir,
   input_data,
+  adm1_mbg_summaries,
   country_name,
   sc_indicator,
   survey_year,
@@ -21,6 +22,9 @@ be saved.}
 \item{input_data}{(\code{data.table}) Table containing at least the fields 'rate',
 'samplesize', 'admin1_code', and 'admin1_name'}
 
+\item{adm1_mbg_summaries}{(\code{data.table}) Table containing at least the fields
+'ADM1_NAME', 'ADM1_CODE', 'mean', 'lower', and 'upper'}
+
 \item{country_name}{(\code{character(1)}) Full name of country}
 
 \item{sc_indicator}{(\code{character(1)}) Statcompiler indicator code}
@@ -32,9 +36,6 @@ Used to make statcompiler estimates compatible with MBG results}
 
 \item{label_function}{(\code{function}) Function converting a numeric vector into a set of
 labels.}
-
-\item{adm1_mbg_summaries}{(\code{data.table}) Table containing at least the fields
-'ADM1_NAME', 'ADM1_CODE', 'mean', 'lower', and 'upper'}
 }
 \description{
 Compare MBG estimates against StatCompiler by admin1 unit

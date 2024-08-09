@@ -17,7 +17,8 @@ mbg_visualizations(
   title_base = "",
   color_scheme = RColorBrewer::brewer.pal("Spectral", n = 9),
   indicator_name = "Indicator",
-  label_function = scales::comma
+  indicator_family = "binomial",
+  label_function = if (indicator_family == "binomial") scales::percent else scales::comma
 )
 }
 \arguments{
@@ -48,6 +49,9 @@ color scheme.}
 
 \item{indicator_name}{(\code{character(1)}) Name of the outcome being plotted, for use in
 some legend titles.}
+
+\item{indicator_family}{(\code{character(1)}) Statistical family of the indicator. Default
+'binomial'.}
 
 \item{label_function}{(\code{function}) Function converting a numeric vector into a set of
 labels.}

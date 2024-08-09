@@ -31,6 +31,8 @@ raster_to_table <- function(raster_object){
 #'   color scheme.
 #' @param indicator_name (`character(1)`) Name of the outcome being plotted, for use in
 #'   some legend titles.
+#' @param indicator_family (`character(1)`) Statistical family of the indicator. Default
+#'   'binomial'.
 #' @param label_function (`function`) Function converting a numeric vector into a set of
 #'   labels.
 #' 
@@ -49,7 +51,8 @@ mbg_visualizations <- function(
   title_base = "",
   color_scheme = RColorBrewer::brewer.pal("Spectral", n = 9),
   indicator_name = "Indicator",
-  label_function = scales::comma
+  indicator_family = 'binomial',
+  label_function = if(indicator_family == 'binomial') scales::percent else scales::comma
 ){
   # Helper elements
   eb <- ggplot2::element_blank()
@@ -120,7 +123,7 @@ mbg_visualizations <- function(
     labs(title = '', fill = 'Mean\nestimate', x = '', y = '') +
     map_theme
   ui_limits_rast <- c(0, quantile(na.omit(ui_table$value), 0.9))
-  if((run_meta$family == 'binomial') & (ui_limits_rast[2] > 0.5)) ui_limits_rast[2] <- 0.5
+  if((indicator_family == 'binomial') & (ui_limits_rast[2] > 0.5)) ui_limits_rast[2] <- 0.5
   raster_ui_fig <- ggplot() + 
     geom_raster(data = ui_table, aes(x = x, y = y, fill = value)) + 
     geom_sf(data = admin_data_for_plotting, fill = NA, linewidth = 0.05, color = '#444444') + 
