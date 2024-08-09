@@ -87,6 +87,7 @@ for(COUNTRY in unique(selected_models$country)){
 
   ## Prepare indicator-specific inputs
   for(INDICATOR in country_indicators){
+    message(glue::glue("Preparing {COUNTRY} - {INDICATOR}"))
     run_meta <- as.list(country_runs[indicator == INDICATOR, ])
     run_specs <- as.list(model_specs[suffix == run_meta$specs, ])
     # Move outputs to the selected directory
@@ -106,8 +107,12 @@ for(COUNTRY in unique(selected_models$country)){
       dplyr::filter(country == COUNTRY) |>
       setnames(c('longitude', 'latitude', 'cluster'), c('x', 'y', 'cluster_id')) |>
       stats::na.omit() |>
-      data.table::copy() |>
-      _[, `:=` (indicator = outcome, samplesize = count)]
+      data.table::copy()
+    if(indicator == 'hhwi_cont'){
+      input_data[, `:=` (indicator = mean, samplesize = count)]      
+    } else {
+      input_data[, `:=` (indicator = outcome, samplesize = count)]
+    }
     versioning::autowrite(input_data, file = file.path(new_run_dir, 'input_data.csv'))
 
     # Load population raster corresponding to this indicator
