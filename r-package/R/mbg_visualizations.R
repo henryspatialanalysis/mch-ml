@@ -149,7 +149,7 @@ mbg_visualizations <- function(
     labs(title = "", x = '', y = '', fill = "Mean") +
     map_theme
   ui_limits_adm <- c(0, quantile(na.omit(admin_data_for_plotting$ui_width), 0.9))
-  if((run_meta$family == 'binomial') & (ui_limits_adm[2] > 0.4)) ui_limits_adm[2] <- 0.4
+  if((indicator_family == 'binomial') & (ui_limits_adm[2] > 0.4)) ui_limits_adm[2] <- 0.4
   adm_ui_fig <- ggplot() + 
     geom_sf(data = admin_data_for_plotting, aes(fill = ui_width), linewidth = 0.05, color = '#444444') +
     geom_sf(data = adm1_boundaries, fill = NA, linewidth = 0.25, color = '#222222') + 
