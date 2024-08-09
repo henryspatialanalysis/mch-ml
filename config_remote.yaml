@@ -2,6 +2,12 @@ countries: ["Cote D'Ivoire", "Ghana", "Kenya", 'Madagascar', "Senegal", "Nigeria
 survey_ids: ["CI2021DHS", "GH2022DHS", "KE2022DHS", "MD2021DHS", "SN2019DHS", "NG2018DHS", "PH2022DHS"]
 map_indicators: ['stunting', 'wasting', 'hhwi_cont', 'first_birth_u18', 'w_empowered_sdg']
 continuous_indicators: ['hhwi_cont']
+indicator_labels:
+  stunting: "Child stunting"
+  wasting: "Child wasting"
+  hhwi_cont: "Household wealth index"
+  first_birth_u18: "First birth <18"
+  w_empowerment_sdg: "Women's Empowerment"
 completeness_threshold: 0.3
 n_holdouts: 5
 n_imputations: 5
