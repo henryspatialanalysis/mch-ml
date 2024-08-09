@@ -24,13 +24,15 @@ globals <- parser$parse_args(commandArgs(trailingOnly = TRUE))
 
 RUN_SET <- globals$run_set
 CONFIG_PATH <- globals$config_path
+if(is.null(RUN_SET)) stop("Run set undefined")
+if(is.null(CONFIG_PATH)) stop("Config path undefined")
 message(glue::glue("Compiling performance metrics for run set {RUN_SET}"))
 
 
 ## SETUP -------------------------------------------------------------------------------->
 
 # Load packages
-load_packages <- c('data.table', 'pixel2poly', 'versioning')
+load_packages <- c('data.table', 'versioning')
 lapply(load_packages, library, character.only = TRUE) |> invisible()
 devtools::load_all(db_repo)
 
@@ -75,6 +77,7 @@ generate_metrics <- function(dt, model_family = 'binomial'){
     [, covered := as.integer((obs_mean > pred_lower) & (obs_mean < pred_upper)) ]
     [, .(
       rmse = sqrt(mean((pred_mean - obs_mean)**2, na.rm = T)),
+      rmse_w = sqrt(weighted.mean((pred_mean - obs_mean)**2, w = samplesize, na.rm = T)),
       mae = mean(abs(pred_mean - obs_mean), na.rm = T),
       bias = mean(pred_mean - obs_mean, na.rm = T),
       r2 = cor(x = obs_mean, y = pred_mean)**2,
@@ -128,17 +131,16 @@ run_metrics_full <- copy(run_metadata) |>
   merge(y = in_sample_metrics, by = 'run_version', all = T) |>
   merge(y = out_of_sample_metrics, by = 'run_version', all = T, suffixes = c('_is', '_oos'))
 
-# Calculate score as a geometric mean of three quantities:
-#  --> Data coverage, capped above 95% (out-of-sample)
-#  --> *Inverse* of RMSE, capped below 5% (out-of-sample)
+# Three different model scores:
+#  --> RMSE weighted by sample size (lowest to highest), out-of-sample
+#  --> Unweighted RMSE (lowest to highest), out-of-sample
+#  --> Data likelihood given model (highest to lowest), out-of-sample
+# Weighted RMSE will be used to select the best-performing model
 (run_metrics_full
-  [, model_score := log(pmax(covg_noextremes_oos, 0.95)) - log(pmax(rmse_oos, 0.05)) ]
-  # Normalize to positive numbers starting at 1
-  [, model_score := model_score - min(model_score), by = .(country, indicator)]
-  [, model_score_rank := frank(-model_score, ties.method = 'random'), by = .(country, indicator)]
-  # Get ranking based on data likelihoods as well
-  [, loglike_is_rank := frank(-loglike_is, ties.method = 'random'), by = .(country, indicator)]
+  [, rmse_w_rank := frank(rmse_w_oos, ties.method = 'random'), by = .(country, indicator)]
+  [, rmse_uw_rank := frank(rmse_oos, ties.method = 'random'), by = .(country, indicator) ]
   [, loglike_oos_rank := frank(-loglike_oos, ties.method = 'random'), by = .(country, indicator)]
+  [, selected := as.integer(rmse_w_rank == 1L) ]
 )
 
 # Save to file
