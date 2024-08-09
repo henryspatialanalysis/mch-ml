@@ -73,7 +73,7 @@ sudo R -e "install.packages('Matrix')";
 # --> Install all other INLA and MBG dependencies
 sudo R -e "install.packages(setdiff(c( \
   'argparse', 'assertthat', 'caret', 'data.table', 'devtools', 'elasticnet', 'fmesher', \
-  'gbm', 'glue', 'graphics', 'grDevices', 'gtools', 'lifecycle', 'MatrixModels', \
+  'gbm', 'glue', 'graphics', 'grDevices', 'gridExtra', 'gtools', 'lifecycle', 'MatrixModels', \
   'matrixStats', 'methods', 'mgcv', 'nlme', 'nnet', 'osmdata', 'parallel', 'purrr', 'r5r', \
   'R6', 'rdhs', 'rJava', 'rlang', 'RPostgreSQL', 'sn', 'sf', 'splines', 'stats', 'terra', \
   'tictoc', 'tidytransit', 'utils', 'versioning', 'withr'
