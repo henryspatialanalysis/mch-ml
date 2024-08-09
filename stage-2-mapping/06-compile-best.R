@@ -108,7 +108,7 @@ for(COUNTRY in unique(selected_models$country)){
       setnames(c('longitude', 'latitude', 'cluster'), c('x', 'y', 'cluster_id')) |>
       stats::na.omit() |>
       data.table::copy()
-    if(indicator == 'hhwi_cont'){
+    if(INDICATOR == 'hhwi_cont'){
       input_data[, `:=` (indicator = mean, samplesize = count)]      
     } else {
       input_data[, `:=` (indicator = outcome, samplesize = count)]
