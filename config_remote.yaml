@@ -7,7 +7,7 @@ indicator_labels:
   wasting: "Child wasting"
   hhwi_cont: "Household wealth index"
   first_birth_u18: "First birth <18"
-  w_empowerment_sdg: "Women's Empowerment"
+  w_empowered_sdg: "Women's Empowerment"
 completeness_threshold: 0.3
 n_holdouts: 5
 n_imputations: 5
