@@ -56,7 +56,6 @@ ui_width <- config$get("mbg_settings", "prediction_settings", "ui_width")
 max_adm_level <- config$get('mbg_settings', 'shapefile_settings', 'modeling_level')
 max_adm_level_label <- paste0('adm', max_adm_level)
 all_adm_levels <- seq(0, max_adm_level)
-agg_cols <- config$get("mbg_settings", "shapefile_settings", "ids", max_adm_level_label)
 draw_fields <- paste0('draw_', seq_len(config$get('mbg_settings', 'prediction_settings', 'n_samples')))
 
 
@@ -179,6 +178,7 @@ for(COUNTRY in unique(selected_models$country)){
     adm_draws_list <- adm_summaries_list <- vector('list', length = length(all_adm_levels))
     names(adm_draws_list) <- names(adm_summaries_list) <- paste0('adm', all_adm_levels)
     # Aggregate to the most detailed admin units
+    agg_cols <- config$get("mbg_settings", "shapefile_settings", "ids", max_adm_level_label)
     detailed_adm_draws <- pixel2poly::aggregate_draws_to_polygons(
       draws_matrix = cell_draws,
       aggregation_table = aggregation_table,
