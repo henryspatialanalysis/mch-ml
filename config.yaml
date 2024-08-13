@@ -124,6 +124,9 @@ directories:
       adm0: 'g2015_2014_0.shp'
       adm1: 'g2015_2014_1.shp'
       adm2: 'g2015_2014_2.shp'
+  mbg_repo:
+    versioned: FALSE
+    path: '~/repos/mbg/'
   mbg_covariates:
     versioned: FALSE
     path: '~/temp_data/rr'
